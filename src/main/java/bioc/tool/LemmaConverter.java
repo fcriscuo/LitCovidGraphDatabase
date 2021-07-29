@@ -1,12 +1,11 @@
 package bioc.tool;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import bioc.BioCAnnotation;
 import bioc.util.CopyConverter;
-
 import edu.ucdenver.ccp.nlp.biolemmatizer.BioLemmatizer;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * BioC wrapper
@@ -19,7 +18,7 @@ public class LemmaConverter extends CopyConverter{
   private static BioLemmatizer bioLemmatizer = new BioLemmatizer();
   
   
-  public LemmaConverter () {
+  public LemmaConverter() {
     lemmaMap = new HashMap<String, String>();
   }
   

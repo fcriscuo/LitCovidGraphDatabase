@@ -34,7 +34,6 @@ open class BioCAnnotation {
         text = annotation.text
     }
 
-
     fun clearInfons() {
         infons.clear()
     }
