@@ -7,6 +7,7 @@ package org.genomicdatasci.covidpubmed.lib
 import arrow.core.Either
 import bioc.BioCDocument
 import bioc.BioCPassage
+import io.kotlintest.matchers.startWith
 import org.genomicdatasci.covidpubmed.io.BioCDocumentSupplier
 import org.genomicdatasci.covidpubmed.model.*
 import kotlin.system.exitProcess
@@ -25,16 +26,28 @@ object DocumentConstants {
     const val JOURNAL_KEY = "journal"
     const val PMC_ID_KEY = "article-id_pmc"
     const val ABSTRACT_SECTION_TYPE_VALUE = "ABSTRACT"
+    const val REF_SECTION_TYPE_VALUE = "REF"
     const val ABSTRACT_TYPE_VALUE = "abstract"
-
 }
 
-fun resolveDoi(passage: BioCPassage): String =
-    passage.infons.getOrDefault(DocumentConstants.DOI_KEY, "")
+fun resolveDoi(passage: BioCPassage): String {
+    if (passage.infons.containsKey(DocumentConstants.DOI_KEY)) {
+        return passage.infons.getOrDefault(DocumentConstants.DOI_KEY, "")
+    }
+    // attempt to resolve missing DOI from Journal attribute
+    val journalText = passage.infons.getOrDefault(DocumentConstants.JOURNAL_KEY, "")
+    if (journalText.isNotEmpty()) {
+        val doi = journalText.split(" ")
+            .find { it.startsWith("doi:") }
+        if (doi != null) {
+            return doi
+        }
+    }
+    return ""
+}
 
 fun resolvePubMedId(passage: BioCPassage): String =
     passage.infons.getOrDefault(DocumentConstants.PUBMED_ID_KEY, "")
-
 
 fun resolvePmcId(passage: BioCPassage): String =
     passage.infons.getOrDefault(DocumentConstants.PMC_ID_KEY, "")
@@ -57,8 +70,22 @@ fun resolvePubMedPassage(document: BioCDocument): Either<Exception, BioCPassage>
             it.infons.getValue(DocumentConstants.INFON_SECTION_TYPE_KEY)
                 .equals(DocumentConstants.INFON_SECTION_TYPE_VALUE_TITLE)
         }
+    /*
+    Some documents have an abbreviated front passage
+     */
     if (bioc != null) {
         return Either.Right(bioc)
+    } else {
+        val bioc2 = document.passages
+            .filter { it -> it.infons.containsKey(DocumentConstants.PASSAGE_TYPE_KEY) }
+            .find {
+                it.infons.getValue(DocumentConstants.PASSAGE_TYPE_KEY) == "title"
+            }
+        if (bioc2 != null) {
+            // ensure that the PubMed Id is set
+            bioc2.infons[DocumentConstants.PUBMED_ID_KEY] = document.iD
+            return Either.Right(bioc2)
+        }
     }
     return Either.Left(Exception("A PubMed passage is not available for document id ${document.iD}"))
 }
@@ -74,21 +101,24 @@ fun resolveAuthorList(pubmedId: String, passage: BioCPassage): List<Author> {
     return authorList
 }
 
-// scan every passage in the document for annotations
+// scan every passage in the document, except for annotations that
+// belong to references
 
 fun resolveDocumentAnnotations(pubmedId: String, document: BioCDocument): Map<Int, PubMedAnnotation> {
     val annotationMap = mutableMapOf<Int, PubMedAnnotation>()
-    document.passages.forEach {
-        it.annotations.forEach {
-            it
-            run {
-                val pubmedAnnotation = PubMedAnnotation.parseBioCAnnotation(pubmedId, it)
-                if (!annotationMap.contains(pubmedAnnotation.id)) {
-                    annotationMap[pubmedAnnotation.id] = pubmedAnnotation
+    document.passages
+        .filter { it -> it.infons.containsKey(DocumentConstants.INFON_SECTION_TYPE_KEY) }
+        .filter { it.infons.getValue(DocumentConstants.INFON_SECTION_TYPE_KEY) != DocumentConstants.REF_SECTION_TYPE_VALUE }
+        .forEach {
+            it.annotations.forEach {
+                run {
+                    val pubmedAnnotation = PubMedAnnotation.parseBioCAnnotation(pubmedId, it)
+                    if (!annotationMap.contains(pubmedAnnotation.id)) {
+                        annotationMap[pubmedAnnotation.id] = pubmedAnnotation
+                    }
                 }
             }
         }
-    }
     return annotationMap.toMap()
 }
 
@@ -101,7 +131,7 @@ fun processBioCDocument(document: BioCDocument): PubMedArticle? {
     when (pubMedEither) {
         is Either.Right -> {
             val pubmedPassage = pubMedEither.value
-            return processPubMedPassage(document,pubmedPassage)
+            return processPubMedPassage(document, pubmedPassage)
         }
         is Either.Left -> {
             println(pubMedEither.value.message)
@@ -114,10 +144,10 @@ fun processBioCDocument(document: BioCDocument): PubMedArticle? {
 Function to resolve all unique annotations in a BioCDocument and
 associate them with a PubMed Id
  */
-fun resolveAnnotationMap(document: BioCDocument, pubmedId:String): Map<Int, PubMedAnnotation>{
-    val annotationMap = mutableMapOf<Int,PubMedAnnotation>()
-    document.passages.forEach {it ->
-        run  {
+fun resolveAnnotationMap(document: BioCDocument, pubmedId: String): Map<Int, PubMedAnnotation> {
+    val annotationMap = mutableMapOf<Int, PubMedAnnotation>()
+    document.passages.forEach { it ->
+        run {
             it.annotations.forEach { it ->
                 run {
                     val annotation = PubMedAnnotation.parseBioCAnnotation(pubmedId, it)
@@ -135,29 +165,21 @@ fun resolveAnnotationMap(document: BioCDocument, pubmedId:String): Map<Int, PubM
 Function to resolve the article abstract.
 There are usually >1 BioCPassages that have a type of abstract
 Usually the first one has the correct text
-val bioc = document.passages
-        .filter { it -> it.infons.containsKey(DocumentConstants.INFON_SECTION_TYPE_KEY) }
-        .find {
-            it.infons.getValue(DocumentConstants.INFON_SECTION_TYPE_KEY)
-                .equals(DocumentConstants.INFON_SECTION_TYPE_VALUE_TITLE)
-        }
-        const val ABSTRACT_SECTION_TYPE_VALUE = "ABSTRACT"
-    const val ABSTRACT_TYPE_VALUE = "abstract"
  */
+
 fun resolveArticleAbstract(document: BioCDocument): String {
-   val abstract = document.passages
-       .filter{ it -> it.infons.containsKey(DocumentConstants.INFON_SECTION_TYPE_KEY)}
-       .filter {it.infons.getValue(DocumentConstants.INFON_SECTION_TYPE_KEY)
-           .equals(DocumentConstants.ABSTRACT_SECTION_TYPE_VALUE)}
-       .find {it.infons.getValue(DocumentConstants.PASSAGE_TYPE_KEY)
-           .equals(DocumentConstants.ABSTRACT_TYPE_VALUE)
-       }?.text
+    val abstract = document.passages
+        .filter { it.infons.containsKey(DocumentConstants.INFON_SECTION_TYPE_KEY) }
+        .filter { it.infons.getValue(DocumentConstants.INFON_SECTION_TYPE_KEY) == DocumentConstants.ABSTRACT_SECTION_TYPE_VALUE }
+        .find {
+            it.infons.getValue(DocumentConstants.PASSAGE_TYPE_KEY) == DocumentConstants.ABSTRACT_TYPE_VALUE
+        }?.text
     if (abstract != null) {
         return abstract
     }
     return ""
 }
-    
+
 fun processPubMedPassage(document: BioCDocument, passage: BioCPassage): PubMedArticle {
     val pubmedId = resolvePubMedId(passage)
     val pmcId = resolvePmcId(passage)
