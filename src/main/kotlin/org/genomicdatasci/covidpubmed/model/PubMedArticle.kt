@@ -14,7 +14,7 @@ data class PubMedArticle(val pubmedId: String, val pmcId: String= "",
                          var abstract:String,
                          val authors:List<Author>,
                          val journal: JournalIssue,
-                         val annotations: MutableList<PubMedAnnotation>,
+                         val annotations: Map<Int,PubMedAnnotation>,
                          val references: MutableList<PubMedReference>
 )
 
@@ -40,9 +40,12 @@ data class JournalIssue(val pubmedId: String, val journalName: String,
         fun parseJournalString(pubmedId: String, journalText:String): JournalIssue{
             val tokens = parseStringOnSemiColon(journalText)
             val name = tokens.get(0)
-            val sublist = tokens.subList(1,tokens.lastIndex)
-            val issue = sublist.joinToString(" ")
-            return JournalIssue(pubmedId, name, issue)
+            if (tokens.size > 1) {
+                val sublist = tokens.subList(1, tokens.lastIndex)
+                val issue = sublist.joinToString(" ")
+                return JournalIssue(pubmedId, name, issue)
+            }
+            return JournalIssue(pubmedId, name, "")
         }
     }
 }
