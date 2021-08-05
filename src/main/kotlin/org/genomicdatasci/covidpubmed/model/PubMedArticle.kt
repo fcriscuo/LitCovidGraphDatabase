@@ -5,6 +5,8 @@
 package org.genomicdatasci.covidpubmed.model
 
 import bioc.BioCAnnotation
+import bioc.BioCPassage
+import org.genomicdatasci.covidpubmed.lib.*
 
 /**
  * Created by fcriscuo on 2021Jul29
@@ -15,10 +17,52 @@ data class PubMedArticle(val pubmedId: String, val pmcId: String= "",
                          val authors:List<Author>,
                          val journal: JournalIssue,
                          val annotations: Map<Int,PubMedAnnotation>,
-                         val references: MutableList<PubMedReference>
+                         val references: List<PubMedReference>
 )
 
-data class PubMedReference (val parentPubMedId: String, val reference: PubMedArticle)
+data class PubMedReference (val parentPubMedId: String,
+                            val pubmedId: String,
+                            val doiId:String="",
+                            val articleTitle:String,
+                            val authors:List<Author>,
+                            val journalName: String,
+                            val journalYear: String,
+                            val journalVolume: String,
+                            val annotations: Map<Int,PubMedAnnotation>,
+                            ) {
+    fun isValid()  = pubmedId.isNotEmpty() || doiId.isNotEmpty()
+
+
+    companion object : LitCovidModel {
+        fun parseBioCReferncePassage(parentPubmedId: String, passage: BioCPassage): PubMedReference {
+            val pubmedId = resolveReferencePubMedId(passage)
+            val doi = resolveReferenceDoiId(passage)
+            val title = passage.text
+            val authors = resolveAuthorList(pubmedId, passage)
+            val annotations = processRefAnnotations(pubmedId, passage)
+            val journalName = resolvePassageInfonValue("source", passage)
+            val year = resolvePassageInfonValue("year", passage)
+            val volume = resolvePassageInfonValue("volume", passage)
+            return PubMedReference(
+                parentPubmedId, pubmedId, doi, title,
+                authors, journalName, year, volume, annotations
+            )
+        }
+
+        private fun processRefAnnotations(pubmedId: String, passage: BioCPassage): Map<Int, PubMedAnnotation> {
+            val annotationMap = mutableMapOf<Int, PubMedAnnotation>()
+            passage.annotations.forEach {
+                run {
+                    val pubmedAnnotation = PubMedAnnotation.parseBioCAnnotation(pubmedId, it)
+                    if (!annotationMap.contains(pubmedAnnotation.id)) {
+                        annotationMap[pubmedAnnotation.id] = pubmedAnnotation
+                    }
+                }
+            }
+            return annotationMap.toMap()
+        }
+    }
+}
 
 data class PubMedAnnotation(val pubmedId: String, val id: Int, val type: String, val identifier: String, val text: String) {
     fun isValid(): Boolean  = (type.isNotEmpty() && identifier.isNotEmpty())

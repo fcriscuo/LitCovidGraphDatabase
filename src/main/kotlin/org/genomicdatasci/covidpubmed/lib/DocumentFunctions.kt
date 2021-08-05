@@ -7,7 +7,6 @@ package org.genomicdatasci.covidpubmed.lib
 import arrow.core.Either
 import bioc.BioCDocument
 import bioc.BioCPassage
-import io.kotlintest.matchers.startWith
 import org.genomicdatasci.covidpubmed.io.BioCDocumentSupplier
 import org.genomicdatasci.covidpubmed.model.*
 import kotlin.system.exitProcess
@@ -18,15 +17,18 @@ import kotlin.system.exitProcess
 
 object DocumentConstants {
     const val PUBMED_ID_KEY = "article-id_pmid"
+    const val REF_PUBMED_ID_KEY = "pub-id_pmid"
     const val PASSAGE_TYPE_KEY = "type"
     const val PASSAGE_TYPE_VALUE_FRONT = "front"
     const val INFON_SECTION_TYPE_KEY = "section_type"
     const val INFON_SECTION_TYPE_VALUE_TITLE = "TITLE"
     const val DOI_KEY = "article-id_doi"
+    const val REF_DOI_KEY = "pub-id_doi"
     const val JOURNAL_KEY = "journal"
     const val PMC_ID_KEY = "article-id_pmc"
     const val ABSTRACT_SECTION_TYPE_VALUE = "ABSTRACT"
     const val REF_SECTION_TYPE_VALUE = "REF"
+    const val REF_TYPE_VALUE = "ref"
     const val ABSTRACT_TYPE_VALUE = "abstract"
 }
 
@@ -46,8 +48,18 @@ fun resolveDoi(passage: BioCPassage): String {
     return ""
 }
 
+fun resolvePassageInfonValue(infonKey:String, passage:BioCPassage):String
+   = passage.infons.getOrDefault(infonKey,"")
+
+
 fun resolvePubMedId(passage: BioCPassage): String =
     passage.infons.getOrDefault(DocumentConstants.PUBMED_ID_KEY, "")
+
+fun resolveReferencePubMedId(passage: BioCPassage): String =
+    passage.infons.getOrDefault(DocumentConstants.REF_PUBMED_ID_KEY, "")
+
+fun resolveReferenceDoiId(passage: BioCPassage): String =
+    passage.infons.getOrDefault(DocumentConstants.REF_DOI_KEY,"")
 
 fun resolvePmcId(passage: BioCPassage): String =
     passage.infons.getOrDefault(DocumentConstants.PMC_ID_KEY, "")
@@ -101,7 +113,7 @@ fun resolveAuthorList(pubmedId: String, passage: BioCPassage): List<Author> {
     return authorList
 }
 
-// scan every passage in the document, except for annotations that
+// scan every passage in the document for annotations, except those for annotations that
 // belong to references
 
 fun resolveDocumentAnnotations(pubmedId: String, document: BioCDocument): Map<Int, PubMedAnnotation> {
@@ -139,6 +151,26 @@ fun processBioCDocument(document: BioCDocument): PubMedArticle? {
     }
     return null
 }
+
+/*
+Function to resolve PubMed article references
+ */
+fun resolveReferenceList(document: BioCDocument, pubmedId: String):List<PubMedReference> {
+    val refList = mutableListOf<PubMedReference>()
+    document.passages.filter{ referencePassagePredicate(it)}
+        .map{ PubMedReference.parseBioCReferncePassage(pubmedId, it)}
+        .filter { it.isValid() }
+        .forEach { refList.add(it) }
+
+    return refList.toList()
+}
+
+fun referencePassagePredicate(passage:BioCPassage):Boolean =
+    passage.infons.containsKey("section_type") &&
+            passage.infons["section_type"].equals("REF") &&
+            passage.infons.containsKey("type") &&
+            passage.infons["type"].equals("ref")
+
 
 /*
 Function to resolve all unique annotations in a BioCDocument and
@@ -191,7 +223,7 @@ fun processPubMedPassage(document: BioCDocument, passage: BioCPassage): PubMedAr
     // need to scan the entire document for annotations and references
     // create a placeholder list
     val annotationMap = resolveAnnotationMap(document, pubmedId)
-    val references = mutableListOf<PubMedReference>()
+    val references = resolveReferenceList(document, pubmedId)
     return PubMedArticle(
         pubmedId, pmcId, doi, title, abstract,
         authorList, journal, annotationMap, references
