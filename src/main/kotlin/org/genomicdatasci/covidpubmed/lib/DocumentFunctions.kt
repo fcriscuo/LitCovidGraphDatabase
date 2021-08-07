@@ -102,9 +102,9 @@ fun resolvePubMedPassage(document: BioCDocument): Either<Exception, BioCPassage>
     return Either.Left(Exception("A PubMed passage is not available for document id ${document.iD}"))
 }
 
-fun resolveArticleJournal(pubmedId: String, passage: BioCPassage): JournalIssue {
+fun resolveArticleJournal(pubmedId: String, passage: BioCPassage, doi:String =""): JournalIssue {
     val journalText = passage.infons.getOrDefault(DocumentConstants.JOURNAL_KEY, "")
-    return JournalIssue.parseJournalString(pubmedId, journalText)
+    return JournalIssue.parseJournalString(pubmedId, doi, journalText)
 }
 
 fun resolveAuthorList(pubmedId: String, passage: BioCPassage): List<Author> {
@@ -218,13 +218,11 @@ fun processPubMedPassage(document: BioCDocument, passage: BioCPassage): PubMedAr
     val doi = resolveDoi(passage)
     val title = passage.text
     val abstract = resolveArticleAbstract(document)
-    val journal = resolveArticleJournal(pubmedId, passage)
+    val journal = resolveArticleJournal(pubmedId,  passage, doi)
     val authorList = resolveAuthorList(pubmedId, passage)
-    // need to scan the entire document for annotations and references
-    // create a placeholder list
     val annotationMap = resolveAnnotationMap(document, pubmedId)
     val references = resolveReferenceList(document, pubmedId)
-    return PubMedArticle(
+    return PubMedArticle( listOf<String>("PubMed","Covid"),
         pubmedId, pmcId, doi, title, abstract,
         authorList, journal, annotationMap, references
     )

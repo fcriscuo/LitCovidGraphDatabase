@@ -28,7 +28,7 @@ TODO: refactor to use Kotlin public getter for graphdb
 class LitCovidGraphDatabaseSupplier(dbDir: File = DEFAULT_TEST_DATABSE_DIRECTORY,
                                dbName: String = GraphDatabaseSettings.DEFAULT_DATABASE_NAME,
                                runMode: RunMode = RunMode.TEST) : Supplier<GraphDatabaseService> {
-    val graphdb = LitCovidGraphDatabaseServiceInitializer(dbDir, dbName, runMode).graphdb
+    private val graphdb = LitCovidGraphDatabaseServiceInitializer(dbDir, dbName, runMode).graphdb
 
     override fun get(): GraphDatabaseService {
         return graphdb
@@ -50,8 +50,8 @@ private class LitCovidGraphDatabaseServiceInitializer(dbDir: File,
             RunMode.READ_ONLY -> configureReadOnlyDatabase()
 
         }
-        return graphdb
     }
+
     private fun configureReadOnlyDatabase(): GraphDatabaseService {
         val databaseManagementServiceBuilder = DatabaseManagementServiceBuilder(databaseDir)
         databaseManagementServiceBuilder.setConfig(GraphDatabaseSettings.read_only, true)
