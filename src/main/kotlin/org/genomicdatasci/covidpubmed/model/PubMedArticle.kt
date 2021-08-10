@@ -106,7 +106,8 @@ data class JournalIssue(
     val pubmedId: String,
     val refDoiId: String,
     val journalName: String,
-    val journalIssue: String
+    val journalIssue: String,
+    val id: Int
 ) {
     companion object : LitCovidModel {
         fun parseReferenceJournalData(
@@ -124,7 +125,8 @@ data class JournalIssue(
             if (journalVolume.isNotEmpty()) issue = " $issue $journalVolume"
             if (journalIssue.isNotEmpty()) issue = " $issue $journalIssue"
             if (fpage.isNotEmpty()) issue = " $issue pg:$fpage-$lpage"
-            return JournalIssue(listOf("Journal", journalName), pubmedId, doiId, journalName, issue)
+            val id = (journalName + JournalIssue).hashCode()
+            return JournalIssue(listOf("Journal", journalName), pubmedId, doiId, journalName, issue, id)
         }
 
         fun parseJournalString(
@@ -132,14 +134,15 @@ data class JournalIssue(
             doiId: String = "",
             journalText: String
         ): JournalIssue {
+            val id = journalText.hashCode()
             val tokens = parseStringOnSemiColon(journalText)
             val name = tokens[0]
             if (tokens.size > 1) {
                 val sublist = tokens.subList(1, tokens.lastIndex)
                 val issue = sublist.joinToString(" ")
-                return JournalIssue(listOf("Journal", name), pubmedId, doiId, name, issue)
+                return JournalIssue(listOf("Journal", name), pubmedId, doiId, name, issue,id)
             }
-            return JournalIssue(listOf("Journal", name), pubmedId, doiId, name, "")
+            return JournalIssue(listOf("Journal", name), pubmedId, doiId, name, "",id)
         }
     }
 }
