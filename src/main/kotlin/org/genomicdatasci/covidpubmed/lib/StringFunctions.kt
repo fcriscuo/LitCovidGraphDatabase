@@ -15,3 +15,10 @@ fun displayGeneOntologyList(title:String, list:List<String>): Unit {
         .map { entry -> parseGeneOntologyEntry(entry) }
         .forEach { pair -> println("GO Entry: title ${pair.first}  ${pair.second}") }
 }
+
+/*
+Double quotes (i.e. ") inside a text field causes Cypher
+processing errors
+ */
+fun modifyInternalQuotes(text:String): String =
+    text.replace("\"","'")

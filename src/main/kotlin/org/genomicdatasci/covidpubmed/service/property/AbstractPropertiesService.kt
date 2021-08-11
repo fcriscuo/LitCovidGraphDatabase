@@ -1,7 +1,7 @@
 package org.genomicdatasci.covidpubmed.service.property
 
 import arrow.core.*
-import mu.KotlinLogging
+import com.google.common.flogger.FluentLogger
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -12,7 +12,7 @@ import java.util.*
  */
 abstract class AbstractPropertiesService {
     val properties: Properties = Properties()
-    val logger = KotlinLogging.logger {}
+    val logger: FluentLogger = FluentLogger.forEnclosingClass();
     fun resolveFrameworkProperties(propertiesFile: String) {
         val stream = AbstractPropertiesService::class.java.getResourceAsStream(propertiesFile)
         //val p = Properties()
@@ -28,20 +28,20 @@ abstract class AbstractPropertiesService {
     //      resolve why that no longer works
     fun resolvePropertyAsString(propertyName: String): String? =
         if (properties.containsKey(propertyName)) {
-            logger.info("Property Value: ${properties.getProperty(propertyName)}")
+            logger.atInfo().log("Property Value: ${properties.getProperty(propertyName)}")
             properties.getProperty(propertyName).toString()
         } else {
-            logger.warn { "$propertyName is an invalid property name " }
+            logger.atWarning().log( "$propertyName is an invalid property name " )
             null
         }
 
 
     fun resolvePropertyAsStringOption(propertyName: String): Option<String> =
         if (properties.containsKey(propertyName)) {
-            logger.info("Property Value: ${properties.getProperty(propertyName)}")
+            logger.atInfo().log("Property Value: ${properties.getProperty(propertyName)}")
             Some(properties.getProperty(propertyName).toString())
         } else {
-            logger.warn { "$propertyName is an invalid property name " }
+            logger.atWarning().log( "$propertyName is an invalid property name " )
             None
         }
 
@@ -66,7 +66,7 @@ abstract class AbstractPropertiesService {
         if (propertyOption.nonEmpty()) {
             return propertyOption.map { path -> Paths.get(path) }
         }
-        logger.info { "Requested Path property: $propertyName is invalid" }
+        logger.atInfo().log( "Requested Path property: $propertyName is invalid" )
         return None
     }
 

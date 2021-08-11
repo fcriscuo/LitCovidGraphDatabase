@@ -22,7 +22,6 @@ object Neo4jConnectionService {
     private const val uri = "bolt://localhost:7687"
     private val driver = GraphDatabase.driver( uri, AuthTokens.basic( neo4jAccount, neo4jPassword))
      val logger: FluentLogger = FluentLogger.forEnclosingClass();
-   //val logger = KotlinLogging.logger {}
 
     fun close() = driver.close()
 
@@ -38,6 +37,7 @@ object Neo4jConnectionService {
     }
 
     fun executeCypherCommand(command: String):String {
+        logger.atInfo().log("+++Cypher command: $command")
         val session = driver.session()
         session.use {
             val resultString = session.writeTransaction { tx ->

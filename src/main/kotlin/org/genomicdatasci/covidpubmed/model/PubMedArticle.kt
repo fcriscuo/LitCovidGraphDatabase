@@ -55,7 +55,7 @@ data class PubMedReference(
                 journalName, year, volume, issue, fpage, lpage
             )
             return PubMedReference(
-                listOf<String>("PubMed", "Reference"),
+                listOf<String>("PubMedArticle" ,"Reference"),
                 parentPubmedId, pubmedId, doi, title,
                 authors, journalIssue,
                 annotations
@@ -126,7 +126,7 @@ data class JournalIssue(
             if (journalIssue.isNotEmpty()) issue = " $issue $journalIssue"
             if (fpage.isNotEmpty()) issue = " $issue pg:$fpage-$lpage"
             val id = (journalName + JournalIssue).hashCode()
-            return JournalIssue(listOf("Journal", journalName), pubmedId, doiId, journalName, issue, id)
+            return JournalIssue(listOf("JournalIssue", journalName), pubmedId, doiId, journalName, issue, id)
         }
 
         fun parseJournalString(

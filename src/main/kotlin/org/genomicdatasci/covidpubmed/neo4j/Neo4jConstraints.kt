@@ -24,10 +24,11 @@ val logger: FluentLogger = FluentLogger.forEnclosingClass();
 fun defineConstraints() {
     constraints.forEach {
       Neo4jConnectionService.defineDatabaseConstraint(it)
-        logger.atInfo().log("${it}  defined")
+        logger.atInfo().log("Constraint: $it  has been defined")
     }
 }
 
+// stand-alone invocation
 fun main(){
     defineConstraints()
 }

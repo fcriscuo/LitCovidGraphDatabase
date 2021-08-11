@@ -1,19 +1,19 @@
 package org.genomicdatasci.covidpubmed.service.datamining
 
 import arrow.core.Either
-import mu.KotlinLogging
+import com.google.common.flogger.FluentLogger
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.net.PrintCommandListener
 import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPReply
-import org.genomicdatasci.covidpubmed.lib.RefinedFilePath
 import org.genomicdatasci.covidpubmed.lib.LitCovidFileUtils
+import org.genomicdatasci.covidpubmed.lib.RefinedFilePath
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.PrintWriter
 import java.net.URL
-import java.io.FileOutputStream
 
 /**
  * Created by fcriscuo on 7/28/21.
@@ -21,8 +21,7 @@ import java.io.FileOutputStream
 const val FTP_USER = "anonymous"
 const val FTP_PASSWORD = "batteryparkdev@gmail.com" //TODO get from environment
 const val FTP_PORT = 21
-
-private val logger = KotlinLogging.logger {}
+private  val logger: FluentLogger = FluentLogger.forEnclosingClass();
 
 
 /*

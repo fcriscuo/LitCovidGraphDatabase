@@ -7,6 +7,7 @@ package org.genomicdatasci.covidpubmed.lib
 import arrow.core.Either
 import bioc.BioCDocument
 import bioc.BioCPassage
+import com.google.common.flogger.FluentLogger
 import org.genomicdatasci.covidpubmed.io.BioCDocumentSupplier
 import org.genomicdatasci.covidpubmed.model.*
 import kotlin.system.exitProcess
@@ -31,6 +32,7 @@ object DocumentConstants {
     const val REF_TYPE_VALUE = "ref"
     const val ABSTRACT_TYPE_VALUE = "abstract"
 }
+private val logger: FluentLogger = FluentLogger.forEnclosingClass();
 
 fun resolveDoi(passage: BioCPassage): String {
     if (passage.infons.containsKey(DocumentConstants.DOI_KEY)) {
@@ -59,10 +61,10 @@ fun resolveReferencePubMedId(passage: BioCPassage): String =
     passage.infons.getOrDefault(DocumentConstants.REF_PUBMED_ID_KEY, "")
 
 fun resolveReferenceDoiId(passage: BioCPassage): String =
-    passage.infons.getOrDefault(DocumentConstants.REF_DOI_KEY,"")
+    passage.infons.getOrDefault(DocumentConstants.REF_DOI_KEY,"NA")
 
 fun resolvePmcId(passage: BioCPassage): String =
-    passage.infons.getOrDefault(DocumentConstants.PMC_ID_KEY, "")
+    passage.infons.getOrDefault(DocumentConstants.PMC_ID_KEY, "NA")
 
 /*
 The PubMed passage is essential for processing a BioCDocument
@@ -222,7 +224,7 @@ fun processPubMedPassage(document: BioCDocument, passage: BioCPassage): PubMedAr
     val authorList = resolveAuthorList(pubmedId, passage)
     val annotationMap = resolveAnnotationMap(document, pubmedId)
     val references = resolveReferenceList(document, pubmedId)
-    return PubMedArticle( listOf<String>("PubMed","Covid"),
+    return PubMedArticle( listOf<String>("PubMedArticle","Covid"),
         pubmedId, pmcId, doi, title, abstract,
         authorList, journal, annotationMap, references
     )

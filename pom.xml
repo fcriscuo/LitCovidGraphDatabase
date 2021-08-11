@@ -19,8 +19,6 @@
         <apache.commons.io.version>2.11.0</apache.commons.io.version>
         <apache.log4j.version>1.2.17</apache.log4j.version>
         <apache.csv.version>1.8</apache.csv.version>
-        <rxjava2.version>2.2.17</rxjava2.version>
-        <rxjava2.jdbc.version>0.7.16</rxjava2.jdbc.version>
         <guava.version>30.1.1-jre</guava.version>
         <eclipse.collections.version>10.4.0</eclipse.collections.version>
         <scala_version>2.13.6</scala_version>
@@ -28,7 +26,6 @@
         <eclipse.vertx.version>3.5.1</eclipse.vertx.version>
         <neo4j.version>4.3.2</neo4j.version>
         <neo4j.driver.version>4.3.4</neo4j.driver.version>
-        <twitter.util.version>20.1.0</twitter.util.version>
         <lombok.version>1.18.20</lombok.version>
         <cfg4j.version>4.4.1</cfg4j.version>
         <kotlin.version>1.5.30-M1</kotlin.version>
@@ -107,6 +104,7 @@
             <artifactId>jaxb-impl</artifactId>
             <version>3.0.1</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -160,11 +158,6 @@
             <version>1.2.5</version>
         </dependency>
 
-        <dependency>
-            <groupId>io.github.microutils</groupId>
-            <artifactId>kotlin-logging-jvm</artifactId>
-            <version>2.0.10</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/io.arrow-kt/arrow-core -->
         <dependency>
             <groupId>io.arrow-kt</groupId>
@@ -205,7 +198,6 @@
             <artifactId>owlapi-parsers</artifactId>
             <version>5.1.17</version>
         </dependency>
-
 
         <dependency>
             <groupId>io.mockk</groupId>
@@ -257,37 +249,7 @@
             <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.twitter/util-collection -->
-        <dependency>
-            <groupId>com.twitter</groupId>
-            <artifactId>util-collection_2.12</artifactId>
-            <version>19.1.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.twitter/util-core -->
-        <dependency>
-            <groupId>com.twitter</groupId>
-            <artifactId>util-core_2.12</artifactId>
-            <version>21.6.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.twitter/util-logging -->
-        <dependency>
-            <groupId>com.twitter</groupId>
-            <artifactId>util-logging_2.12</artifactId>
-            <version>21.6.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala_version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.scalatest/scalatest -->
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.12</artifactId>
-            <version>${scalatest.version}</version>
-            <scope>test</scope>
-        </dependency>
+
         <!--  eclipse collections  -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
