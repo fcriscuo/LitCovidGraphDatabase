@@ -44,11 +44,23 @@ class PubMedArticleDao (val article: PubMedArticle) {
         return Neo4jConnectionService.executeCypherCommand(setLabelsCypher)
     }
 
+    /*
+    Persist the data encapsulated in the PubMedArticle object
+     */
     fun persistPubMedArticle () = run {
+        // Load the PubMedArticle node
         val mergeResult = mergePubMedArticle()
         logger.atInfo().log("Merge completed for PubMed Id: $mergeResult")
         val setResult = setLabels()
         logger.atInfo().log("Labels for PubMedId: ${article.pubmedId} = $setResult")
+        /* load the JournalIssue node
+         */
+        JournalIssueDao(article.journal).persistJournalIssue()
+        /*
+        Load the annotations
+         */
+        article.annotations.values.filter{it.isValid()}
+            .forEach { it -> AnnotationDao(it).persistAnnotation()}
     }
 
 }

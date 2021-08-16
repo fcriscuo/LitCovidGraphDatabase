@@ -18,7 +18,7 @@ data class PubMedArticle(
     var abstract: String,
     val authors: List<Author>,
     val journal: JournalIssue,
-    val annotations: Map<Int, PubMedAnnotation>,
+    val annotations: Map<Int, LitCovidAnnotation>,
     val references: List<PubMedReference>
 )
 
@@ -30,7 +30,7 @@ data class PubMedReference(
     val articleTitle: String,
     val authors: List<Author>,
     val journal: JournalIssue,
-    val annotations: Map<Int, PubMedAnnotation>,
+    val annotations: Map<Int, LitCovidAnnotation>,
 ) {
     fun isValid() = pubmedId.isNotEmpty() || doiId.isNotEmpty()
 
@@ -62,11 +62,11 @@ data class PubMedReference(
             )
         }
 
-        private fun processRefAnnotations(pubmedId: String, passage: BioCPassage): Map<Int, PubMedAnnotation> {
-            val annotationMap = mutableMapOf<Int, PubMedAnnotation>()
+        private fun processRefAnnotations(pubmedId: String, passage: BioCPassage): Map<Int, LitCovidAnnotation> {
+            val annotationMap = mutableMapOf<Int, LitCovidAnnotation>()
             passage.annotations.forEach {
                 run {
-                    val pubmedAnnotation = PubMedAnnotation.parseBioCAnnotation(pubmedId, it)
+                    val pubmedAnnotation = LitCovidAnnotation.parseBioCAnnotation(pubmedId, it)
                     if (!annotationMap.contains(pubmedAnnotation.id)) {
                         annotationMap[pubmedAnnotation.id] = pubmedAnnotation
                     }
@@ -77,7 +77,7 @@ data class PubMedReference(
     }
 }
 
-data class PubMedAnnotation(
+data class LitCovidAnnotation(
     val labels: List<String>,
     val pubmedId: String,
     val id: Int,
@@ -88,13 +88,13 @@ data class PubMedAnnotation(
     fun isValid(): Boolean = (type.isNotEmpty() && identifier.isNotEmpty())
 
     companion object : LitCovidModel {
-        fun parseBioCAnnotation(pubmedId: String, biocAnn: BioCAnnotation): PubMedAnnotation {
+        fun parseBioCAnnotation(pubmedId: String, biocAnn: BioCAnnotation): LitCovidAnnotation {
             val identifier = biocAnn.infons.getOrDefault("identifier", "")
             val type = biocAnn.infons.getOrDefault("type", "")
             val text = biocAnn.text
             val id = (identifier + type).hashCode()
-            return PubMedAnnotation(
-                listOf("Annotation", type),
+            return LitCovidAnnotation(
+                listOf (type),
                 pubmedId, id, type, identifier, text
             )
         }
@@ -104,18 +104,23 @@ data class PubMedAnnotation(
 data class JournalIssue(
     val labels: List<String>,
     val pubmedId: String,
-    val refDoiId: String,
+    val doiId: String,
     val journalName: String,
     val journalIssue: String,
     val id: Int
 ) {
+    fun isValid():Boolean = pubmedId.isNotEmpty() &&
+            journalName.isNotEmpty() &&
+            doiId.isNotEmpty()
+
+
     companion object : LitCovidModel {
         fun parseReferenceJournalData(
             pubmedId: String,
-            doiId: String = "",
+            doiId: String = " ",
             journalName: String,
-            journalYear: String,
-            journalVolume: String,
+            journalYear: String ,
+            journalVolume: String ,
             journalIssue: String,
             fpage: String,
             lpage: String
@@ -136,13 +141,18 @@ data class JournalIssue(
         ): JournalIssue {
             val id = journalText.hashCode()
             val tokens = parseStringOnSemiColon(journalText)
-            val name = tokens[0]
+            val re = Regex("[^A-Za-z0-9]")
+            val name = re.replace(tokens[0], "")
+            val labels = when (name.isEmpty()){
+                true -> listOf()
+                false -> listOf( name)
+            }
             if (tokens.size > 1) {
                 val sublist = tokens.subList(1, tokens.lastIndex)
                 val issue = sublist.joinToString(" ")
-                return JournalIssue(listOf("Journal", name), pubmedId, doiId, name, issue,id)
+                return JournalIssue(labels, pubmedId, doiId, name, issue,id)
             }
-            return JournalIssue(listOf("Journal", name), pubmedId, doiId, name, "",id)
+            return JournalIssue(labels, pubmedId, doiId, name, "",id)
         }
     }
 }

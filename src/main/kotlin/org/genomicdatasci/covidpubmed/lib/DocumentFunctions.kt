@@ -104,8 +104,8 @@ fun resolvePubMedPassage(document: BioCDocument): Either<Exception, BioCPassage>
     return Either.Left(Exception("A PubMed passage is not available for document id ${document.iD}"))
 }
 
-fun resolveArticleJournal(pubmedId: String, passage: BioCPassage, doi:String =""): JournalIssue {
-    val journalText = passage.infons.getOrDefault(DocumentConstants.JOURNAL_KEY, "")
+fun resolveArticleJournal(pubmedId: String, passage: BioCPassage, doi:String =" "): JournalIssue {
+    val journalText = passage.infons.getOrDefault(DocumentConstants.JOURNAL_KEY, " ")
     return JournalIssue.parseJournalString(pubmedId, doi, journalText)
 }
 
@@ -118,15 +118,15 @@ fun resolveAuthorList(pubmedId: String, passage: BioCPassage): List<Author> {
 // scan every passage in the document for annotations, except those for annotations that
 // belong to references
 
-fun resolveDocumentAnnotations(pubmedId: String, document: BioCDocument): Map<Int, PubMedAnnotation> {
-    val annotationMap = mutableMapOf<Int, PubMedAnnotation>()
+fun resolveDocumentAnnotations(pubmedId: String, document: BioCDocument): Map<Int, org.genomicdatasci.covidpubmed.model.LitCovidAnnotation> {
+    val annotationMap = mutableMapOf<Int, org.genomicdatasci.covidpubmed.model.LitCovidAnnotation>()
     document.passages
         .filter { it -> it.infons.containsKey(DocumentConstants.INFON_SECTION_TYPE_KEY) }
         .filter { it.infons.getValue(DocumentConstants.INFON_SECTION_TYPE_KEY) != DocumentConstants.REF_SECTION_TYPE_VALUE }
         .forEach {
             it.annotations.forEach {
                 run {
-                    val pubmedAnnotation = PubMedAnnotation.parseBioCAnnotation(pubmedId, it)
+                    val pubmedAnnotation = LitCovidAnnotation.parseBioCAnnotation(pubmedId, it)
                     if (!annotationMap.contains(pubmedAnnotation.id)) {
                         annotationMap[pubmedAnnotation.id] = pubmedAnnotation
                     }
@@ -136,8 +136,9 @@ fun resolveDocumentAnnotations(pubmedId: String, document: BioCDocument): Map<In
     return annotationMap.toMap()
 }
 
-fun resolveAnnotationList(pubmedId: String, passage: BioCPassage): List<PubMedAnnotation> =
-    passage.annotations.map { it -> PubMedAnnotation.parseBioCAnnotation(pubmedId, it) }
+fun resolveAnnotationList(pubmedId: String, passage: BioCPassage):
+        List<org.genomicdatasci.covidpubmed.model.LitCovidAnnotation> =
+    passage.annotations.map { it -> LitCovidAnnotation.parseBioCAnnotation(pubmedId, it) }
 
 
 fun processBioCDocument(document: BioCDocument): PubMedArticle? {
@@ -178,13 +179,13 @@ fun referencePassagePredicate(passage:BioCPassage):Boolean =
 Function to resolve all unique annotations in a BioCDocument and
 associate them with a PubMed Id
  */
-fun resolveAnnotationMap(document: BioCDocument, pubmedId: String): Map<Int, PubMedAnnotation> {
-    val annotationMap = mutableMapOf<Int, PubMedAnnotation>()
+fun resolveAnnotationMap(document: BioCDocument, pubmedId: String): Map<Int, org.genomicdatasci.covidpubmed.model.LitCovidAnnotation> {
+    val annotationMap = mutableMapOf<Int, org.genomicdatasci.covidpubmed.model.LitCovidAnnotation>()
     document.passages.forEach { it ->
         run {
             it.annotations.forEach { it ->
                 run {
-                    val annotation = PubMedAnnotation.parseBioCAnnotation(pubmedId, it)
+                    val annotation = LitCovidAnnotation.parseBioCAnnotation(pubmedId, it)
                     if (!annotationMap.containsKey(annotation.id)) {
                         annotationMap.put(annotation.id, annotation)
                     }

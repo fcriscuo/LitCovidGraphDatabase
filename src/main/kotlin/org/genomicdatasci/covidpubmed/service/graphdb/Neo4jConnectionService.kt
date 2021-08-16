@@ -20,8 +20,8 @@ object Neo4jConnectionService {
     private val neo4jAccount = System.getenv("NEO4J_ACCOUNT")
     private val neo4jPassword = System.getenv("NEO4J_PASSWORD")
     private const val uri = "bolt://localhost:7687"
-    private val driver = GraphDatabase.driver( uri, AuthTokens.basic( neo4jAccount, neo4jPassword))
-     val logger: FluentLogger = FluentLogger.forEnclosingClass();
+    private val driver = GraphDatabase.driver(uri, AuthTokens.basic(neo4jAccount, neo4jPassword))
+    val logger: FluentLogger = FluentLogger.forEnclosingClass();
 
     fun close() = driver.close()
 
@@ -31,20 +31,25 @@ object Neo4jConnectionService {
     fun defineDatabaseConstraint(command: String) {
         val session = driver.session()
         session.use {
-             session.writeTransaction { tx -> tx.run(command)
+            session.writeTransaction { tx ->
+                tx.run(command)
             }!!
         }
     }
 
-    fun executeCypherCommand(command: String):String {
+    fun executeCypherCommand(command: String): String {
         logger.atInfo().log("+++Cypher command: $command")
         val session = driver.session()
+        lateinit var resultString:String
         session.use {
-            val resultString = session.writeTransaction { tx ->
+            session.writeTransaction { tx ->
                 val result: Result = tx.run(command)
-                result.single()[0].toString()
+                  resultString = when (result.hasNext()) {
+                    true -> result.single()[0].toString()
+                    false -> ""
+                }
             }!!
-            return resultString
+            return resultString.toString()
         }
     }
 }
@@ -52,6 +57,6 @@ object Neo4jConnectionService {
 fun main() {
     val query = "MATCH (N) RETURN COUNT(N)"
     val result = Neo4jConnectionService.executeCypherCommand(query)
-   Neo4jConnectionService.logger.atInfo().log("Number of database nodes = $result")
+    Neo4jConnectionService.logger.atInfo().log("Number of database nodes = $result")
     Neo4jConnectionService.close()
 }

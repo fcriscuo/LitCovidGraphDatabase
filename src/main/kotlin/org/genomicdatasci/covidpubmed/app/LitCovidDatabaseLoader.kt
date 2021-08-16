@@ -29,6 +29,7 @@ class LitCovidDatabaseLoader {
                     val document = retEither.value
                     loadPubMedArticle(document)
                     logger.atInfo().log("Loaded document id: ${document.iD}")
+                    count += 1
                 }
                 is Either.Left -> {
                     logger.atWarning().log(" ${retEither.value.message}")
@@ -40,14 +41,15 @@ class LitCovidDatabaseLoader {
     }
     /*
     If the document contains a passage with basic PubMedArticle properties
-    map those data to a PubMedArticle object an load it into the database
+    map those data to a PubMedArticle object and load it into the database
      */
     private fun loadPubMedArticle(document: BioCDocument) {
         processBioCDocument(document)?.
         let{ PubMedArticleDao(it) }?.persistPubMedArticle()
-    }
 
+    }
 }
+
 
 fun main(args: Array<String>) {
     val filename = if (args.size > 0) args[0] else "data/xml/sample_litcovid2pubtator.xml"
