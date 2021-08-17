@@ -12,13 +12,11 @@ import org.genomicdatasci.covidpubmed.service.graphdb.Neo4jConnectionService
 /*
 Class is responsible for all database functions regarding PubMedArticle nodes
  */
-class PubMedArticleDao (val article: PubMedArticle) {
-    private val logger: FluentLogger = FluentLogger.forEnclosingClass();
-     private val mergeTemplate = "MERGE (pma:PubMedArticle { pubmed_id: PMAID," +
-             "pmc_id: \"PMCID\", doiid: \"DOIID\", article_title: \"TITLE\", " +
-        "abstract: \"ABSTRACT\" }) RETURN pma.pubmed_id"
-
-
+class PubMedArticleDao(val article: PubMedArticle) {
+    private val logger: FluentLogger = FluentLogger.forEnclosingClass()
+    private val mergeTemplate = "MERGE (pma:PubMedArticle { pubmed_id: PMAID} )" +
+            " pma.pmc_id= \"PMCID\", pma.doiid = \"DOIID\", pma.article_title = \"TITLE\", " +
+            " pma.abstract = \"ABSTRACT\" }) RETURN pma.pubmed_id"
 
 
     private fun generateCypherMergeCommand(): String =
@@ -28,7 +26,7 @@ class PubMedArticleDao (val article: PubMedArticle) {
             .replace("TITLE", modifyInternalQuotes(article.articleTitle))
             .replace("ABSTRACT", modifyInternalQuotes(article.abstract))
 
-   private fun mergePubMedArticle():String {
+    private fun mergePubMedArticle(): String {
         val mergeCypher = generateCypherMergeCommand()
         // display generated Cypher during development
         // TODO: remove logging stmt
@@ -36,8 +34,8 @@ class PubMedArticleDao (val article: PubMedArticle) {
         return Neo4jConnectionService.executeCypherCommand(mergeCypher)
     }
 
-    private fun setLabels():String {
-        val labels = article.labels.joinToString (separator = ":")
+    private fun setLabels(): String {
+        val labels = article.labels.joinToString(separator = ":")
         val setLabelsCypher = "MATCH (p:PubMedArticle{pubmed_id: ${article.pubmedId} })" +
                 " SET p:${labels} RETURN labels(p) AS labels"
         logger.atInfo().log(setLabelsCypher)
@@ -47,7 +45,7 @@ class PubMedArticleDao (val article: PubMedArticle) {
     /*
     Persist the data encapsulated in the PubMedArticle object
      */
-    fun persistPubMedArticle () = run {
+    fun persistPubMedArticle() = run {
         // Load the PubMedArticle node
         val mergeResult = mergePubMedArticle()
         logger.atInfo().log("Merge completed for PubMed Id: $mergeResult")
@@ -59,8 +57,13 @@ class PubMedArticleDao (val article: PubMedArticle) {
         /*
         Load the annotations
          */
-        article.annotations.values.filter{it.isValid()}
-            .forEach { it -> AnnotationDao(it).persistAnnotation()}
+        article.annotations.values.filter { it.isValid() }
+            .forEach { it -> AnnotationDao(it).persistAnnotation() }
+        /*
+        Load the References
+         */
+//        article.references.filter { it.isValid() }
+//            .forEach { it -> PubMedReferenceDao(it).persistPubMedReference() }
     }
 
 }

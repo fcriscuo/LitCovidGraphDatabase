@@ -12,7 +12,6 @@ import org.genomicdatasci.covidpubmed.io.BioCDocumentSupplier
 import org.genomicdatasci.covidpubmed.lib.processBioCDocument
 import kotlin.system.exitProcess
 
-
 /*
 Responsible for loading the data from a specified BioC-formatted XML file
 into a Neo4j database.
@@ -20,10 +19,14 @@ into a Neo4j database.
 class LitCovidDatabaseLoader {
     private val logger: FluentLogger = FluentLogger.forEnclosingClass();
 
-    fun processBioCFile(filename: String) {
+    /*
+    First pass through file is for document passages that contain PubMedArticles
+     */
+    fun processBioCFileForPubMedArticles(filename: String) {
         val supplier = BioCDocumentSupplier(filename)
         var count = 0
         while (true) {
+
             when (val retEither = supplier.get()) {
                 is Either.Right -> {
                     val document = retEither.value
@@ -39,6 +42,8 @@ class LitCovidDatabaseLoader {
             }
         }
     }
+
+
     /*
     If the document contains a passage with basic PubMedArticle properties
     map those data to a PubMedArticle object and load it into the database
@@ -46,12 +51,10 @@ class LitCovidDatabaseLoader {
     private fun loadPubMedArticle(document: BioCDocument) {
         processBioCDocument(document)?.
         let{ PubMedArticleDao(it) }?.persistPubMedArticle()
-
     }
 }
 
-
 fun main(args: Array<String>) {
     val filename = if (args.size > 0) args[0] else "data/xml/sample_litcovid2pubtator.xml"
-    LitCovidDatabaseLoader().processBioCFile(filename)
+    LitCovidDatabaseLoader().processBioCFileForPubMedArticles(filename)
 }

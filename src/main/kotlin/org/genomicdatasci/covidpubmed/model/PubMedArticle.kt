@@ -34,7 +34,6 @@ data class PubMedReference(
 ) {
     fun isValid() = pubmedId.isNotEmpty() || doiId.isNotEmpty()
 
-
     companion object : LitCovidModel {
         // the article details provided in a reference passage are different from
         // those provided in a title (i.e. main) passage
@@ -112,7 +111,6 @@ data class JournalIssue(
     fun isValid():Boolean = pubmedId.isNotEmpty() &&
             journalName.isNotEmpty() &&
             doiId.isNotEmpty()
-
 
     companion object : LitCovidModel {
         fun parseReferenceJournalData(
