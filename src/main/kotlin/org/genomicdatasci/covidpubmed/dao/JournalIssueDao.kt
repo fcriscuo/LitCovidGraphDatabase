@@ -12,9 +12,9 @@ import org.genomicdatasci.covidpubmed.service.graphdb.Neo4jConnectionService
 
 class JournalIssueDao (private val journalIssue: JournalIssue): LitCovidDao() {
 
-    private val mergeTemplate = "MERGE (ji:JournalIssue { id: JIID," +
-            " doiid: \"DOIID\", journal_name: \"NAME\", " +
-            "journal_issue: \"ISSUE\" }) RETURN ji.id"
+    private val mergeTemplate = "MERGE (ji:JournalIssue { id: JIID}) " +
+            " SET ji.doiid = \"DOIID\", ji.journal_name = \"NAME\", " +
+            "ji.journal_issue = \"ISSUE\"  RETURN ji.id"
 
     private fun generateCypherMergeCommand(): String =
         mergeTemplate.replace("JIID", journalIssue.id.toString())

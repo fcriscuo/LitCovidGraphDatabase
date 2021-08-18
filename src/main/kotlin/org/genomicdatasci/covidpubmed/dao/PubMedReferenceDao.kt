@@ -57,6 +57,7 @@ class PubMedReferenceDao( val reference: PubMedReference): LitCovidDao() {
         // Load the PubMedArticle node
         val mergeResult = mergePubMedReference()
         logger.atInfo().log("Merge completed for PubMedReference Id: $mergeResult")
+        setRelationshipToPubMedArticle()
         val setResult = setLabels()
         logger.atInfo().log("Labels for PubMedId: ${reference.pubmedId} = $setResult")
         /* load the JournalIssue node

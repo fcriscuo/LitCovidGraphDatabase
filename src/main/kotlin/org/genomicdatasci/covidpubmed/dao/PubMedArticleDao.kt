@@ -15,8 +15,8 @@ Class is responsible for all database functions regarding PubMedArticle nodes
 class PubMedArticleDao(val article: PubMedArticle) {
     private val logger: FluentLogger = FluentLogger.forEnclosingClass()
     private val mergeTemplate = "MERGE (pma:PubMedArticle { pubmed_id: PMAID} )" +
-            " pma.pmc_id= \"PMCID\", pma.doiid = \"DOIID\", pma.article_title = \"TITLE\", " +
-            " pma.abstract = \"ABSTRACT\" }) RETURN pma.pubmed_id"
+            " SET pma.pmc_id= \"PMCID\", pma.doiid = \"DOIID\", pma.article_title = \"TITLE\", " +
+            " pma.abstract = \"ABSTRACT\"  RETURN pma.pubmed_id"
 
 
     private fun generateCypherMergeCommand(): String =

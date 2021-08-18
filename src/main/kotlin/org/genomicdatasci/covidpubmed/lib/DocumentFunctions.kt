@@ -142,8 +142,7 @@ fun resolveAnnotationList(pubmedId: String, passage: BioCPassage):
 
 
 fun processBioCDocument(document: BioCDocument): PubMedArticle? {
-    val pubMedEither = resolvePubMedPassage(document)
-    when (pubMedEither) {
+    when (val pubMedEither = resolvePubMedPassage(document)) {
         is Either.Right -> {
             val pubmedPassage = pubMedEither.value
             return processPubMedPassage(document, pubmedPassage)

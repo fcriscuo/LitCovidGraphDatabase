@@ -32,7 +32,7 @@ data class PubMedReference(
     val journal: JournalIssue,
     val annotations: Map<Int, LitCovidAnnotation>,
 ) {
-    fun isValid() = pubmedId.isNotEmpty() || doiId.isNotEmpty()
+    fun isValid() = pubmedId.isNotEmpty() && parentPubMedId.isNotEmpty()
 
     companion object : LitCovidModel {
         // the article details provided in a reference passage are different from
@@ -54,7 +54,7 @@ data class PubMedReference(
                 journalName, year, volume, issue, fpage, lpage
             )
             return PubMedReference(
-                listOf<String>("PubMedArticle" ,"Reference"),
+                listOf<String>("PubMedArticle", "Reference"),
                 parentPubmedId, pubmedId, doi, title,
                 authors, journalIssue,
                 annotations
@@ -93,7 +93,7 @@ data class LitCovidAnnotation(
             val text = biocAnn.text
             val id = (identifier + type).hashCode()
             return LitCovidAnnotation(
-                listOf (type),
+                listOf(type),
                 pubmedId, id, type, identifier, text
             )
         }
@@ -108,7 +108,7 @@ data class JournalIssue(
     val journalIssue: String,
     val id: Int
 ) {
-    fun isValid():Boolean = pubmedId.isNotEmpty() &&
+    fun isValid(): Boolean = pubmedId.isNotEmpty() &&
             journalName.isNotEmpty() &&
             doiId.isNotEmpty()
 
@@ -117,8 +117,8 @@ data class JournalIssue(
             pubmedId: String,
             doiId: String = " ",
             journalName: String,
-            journalYear: String ,
-            journalVolume: String ,
+            journalYear: String,
+            journalVolume: String,
             journalIssue: String,
             fpage: String,
             lpage: String
@@ -129,7 +129,8 @@ data class JournalIssue(
             if (journalIssue.isNotEmpty()) issue = " $issue $journalIssue"
             if (fpage.isNotEmpty()) issue = " $issue pg:$fpage-$lpage"
             val id = (journalName + JournalIssue).hashCode()
-            return JournalIssue(listOf("JournalIssue", journalName), pubmedId, doiId, journalName, issue, id)
+            val journalNameLabel = journalName.filter {it.isLetterOrDigit()  }
+            return JournalIssue(listOf("JournalIssue", journalNameLabel), pubmedId, doiId, journalName, issue, id)
         }
 
         fun parseJournalString(
@@ -139,18 +140,17 @@ data class JournalIssue(
         ): JournalIssue {
             val id = journalText.hashCode()
             val tokens = parseStringOnSemiColon(journalText)
-            val re = Regex("[^A-Za-z0-9]")
-            val name = re.replace(tokens[0], "")
-            val labels = when (name.isEmpty()){
+            val name = tokens[0].filter { it.isLetterOrDigit() }
+            val labels = when (name.isEmpty()) {
                 true -> listOf()
-                false -> listOf( name)
+                false -> listOf(name)
             }
             if (tokens.size > 1) {
                 val sublist = tokens.subList(1, tokens.lastIndex)
                 val issue = sublist.joinToString(" ")
-                return JournalIssue(labels, pubmedId, doiId, name, issue,id)
+                return JournalIssue(labels, pubmedId, doiId, name, issue, id)
             }
-            return JournalIssue(labels, pubmedId, doiId, name, "",id)
+            return JournalIssue(labels, pubmedId, doiId, name, "", id)
         }
     }
 }
