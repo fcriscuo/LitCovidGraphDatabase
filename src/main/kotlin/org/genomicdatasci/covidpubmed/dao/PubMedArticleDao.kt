@@ -59,11 +59,12 @@ class PubMedArticleDao(val article: PubMedArticle) {
          */
         article.annotations.values.filter { it.isValid() }
             .forEach { it -> AnnotationDao(it).persistAnnotation() }
+
         /*
-        Load the References
+        Load the article authors
          */
-//        article.references.filter { it.isValid() }
-//            .forEach { it -> PubMedReferenceDao(it).persistPubMedReference() }
+        article.authors.filter { it.isValid() }
+            .forEach { it -> AuthorDao(it).persistAuthor() }
     }
 
 }

@@ -68,6 +68,12 @@ class PubMedReferenceDao( val reference: PubMedReference): LitCovidDao() {
          */
         reference.annotations.values.filter { it.isValid() }
             .forEach { it -> AnnotationDao(it).persistAnnotation() }
+        /*
+        Load the authors
+         */
+        reference.authors.filter { it.isValid() }
+            .forEach { it -> AuthorDao(it).persistAuthor() }
+
     }
 
 }

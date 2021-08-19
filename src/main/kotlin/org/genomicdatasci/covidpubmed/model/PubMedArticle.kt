@@ -88,7 +88,10 @@ data class LitCovidAnnotation(
 
     companion object : LitCovidModel {
         fun parseBioCAnnotation(pubmedId: String, biocAnn: BioCAnnotation): LitCovidAnnotation {
-            val identifier = biocAnn.infons.getOrDefault("identifier", "")
+            val identifier =  when (biocAnn.infons.keys.contains("identifier")) {
+                true -> biocAnn.infons.getOrDefault("identifier", "")
+                false -> biocAnn.infons.getOrDefault("Identifier", "")
+            }
             val type = biocAnn.infons.getOrDefault("type", "")
             val text = biocAnn.text
             val id = (identifier + type).hashCode()
@@ -164,6 +167,7 @@ data class Author(
 ) {
     /*
     sample Author BioC entry: <infon key="name_1">surname:Yamamoto;given-names:Shigeru</infon>
+    val journalNameLabel = journalName.filter {it.isLetterOrDigit()  }
      */
     fun isValid() = surname.isNotBlank()
 
@@ -174,12 +178,12 @@ data class Author(
             parseStringOnSemiColon(authorText).forEach {
                 val name = parseStringOnColon(it)
                 if (name[0] == "surname") {
-                    sn = name[1]
+                    sn = name[1].filter { it.isLetterOrDigit() }
                 } else {
-                    gn = name[1]
+                    gn = name[1].filter {it.isLetterOrDigit()  }
                 }
             }
-            return Author(listOf("Author"), pubmedId, sn, gn, authorText.hashCode())
+            return Author(listOf(sn), pubmedId, sn, gn, authorText.hashCode())
         }
     }
 }
