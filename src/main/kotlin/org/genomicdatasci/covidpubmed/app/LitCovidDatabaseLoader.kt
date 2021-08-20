@@ -128,6 +128,7 @@ class LitCovidDatabaseLoader {
 }
 
 fun main(args: Array<String>) {
-    val filename = if (args.size > 0) args[0] else "data/xml/sample_litcovid2pubtator.xml"
+    val filename = if (args.isNotEmpty()) args[0] else "data/xml/sample_litcovid2pubtator.xml"
+    logger.atInfo().log("Processing BioC file: $filename")
     LitCovidDatabaseLoader().processBioCFileForPubMedArticles(filename)
 }

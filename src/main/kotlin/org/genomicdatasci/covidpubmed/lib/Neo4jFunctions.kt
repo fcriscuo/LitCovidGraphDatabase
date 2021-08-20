@@ -4,8 +4,12 @@
 
 package org.genomicdatasci.covidpubmed.lib
 
+import arrow.core.Either
+import com.google.common.flogger.FluentLogger
+import org.genomicdatasci.covidpubmed.model.PubMedArticle
 import org.genomicdatasci.covidpubmed.service.graphdb.Neo4jConnectionService
 import java.util.*
+
 
 /*
 Function to determine the number of PubMedArticle nodes in the database
@@ -18,16 +22,33 @@ fun countPubMedArticleNodes():Int {
     return Neo4jConnectionService.executeCypherCommand(cypher).toInt()
 }
 
+
+/*
+This function is prone to Exceptions due to invalid input data
+ */
 fun pubMedNodeExistsPredicate (pubmedId:String): Boolean {
     val cypher = "OPTIONAL MATCH (p:PubMedArticle{pubmed_id: $pubmedId }) " +
             " RETURN p IS NOT NULL AS Predicate"
-    val predicate = Neo4jConnectionService.executeCypherCommand(cypher)
-    when (predicate.lowercase(Locale.getDefault())) {
-        "true" -> return true
-         "false" -> return false
+    try {
+        val predicate = Neo4jConnectionService.executeCypherCommand(cypher)
+        when (predicate.lowercase(Locale.getDefault())) {
+            "true" -> return true
+             "false" -> return false
+        }
+    } catch (e: Exception) {
+        org.genomicdatasci.covidpubmed.neo4j.logger.atSevere().log(e.message.toString())
+        return false
     }
     return false
 }
+
+//fun retrievePubMedArticleByPubMedId(pubmedId: String): Either<Exception, PubMedArticle >{
+//    val query = "MATCH (pma:PubMedArticle {pubmed_id: $pubmedId} return pma"
+//    if (pubMedNodeExistsPredicate(pubmedId)) {
+//        val article = Neo4jConnectionService.executeCypherCommand(query)
+//    }
+//
+//}
 
 /*
 stand-alone testing

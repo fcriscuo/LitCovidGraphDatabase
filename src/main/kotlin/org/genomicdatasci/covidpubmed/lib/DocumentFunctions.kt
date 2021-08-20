@@ -32,7 +32,7 @@ object DocumentConstants {
     const val REF_TYPE_VALUE = "ref"
     const val ABSTRACT_TYPE_VALUE = "abstract"
 }
-private val logger: FluentLogger = FluentLogger.forEnclosingClass();
+val logger: FluentLogger = FluentLogger.forEnclosingClass();
 
 fun resolveDoi(passage: BioCPassage): String {
     if (passage.infons.containsKey(DocumentConstants.DOI_KEY)) {

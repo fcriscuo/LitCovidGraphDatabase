@@ -4,10 +4,11 @@
 
 package org.genomicdatasci.covidpubmed.service.graphdb
 
+import com.google.common.flogger.FluentLogger
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.GraphDatabase
 import org.neo4j.driver.Result
-import com.google.common.flogger.FluentLogger;
+import java.util.*
 
 
 /**
@@ -37,8 +38,9 @@ object Neo4jConnectionService {
         }
     }
 
+
     fun executeCypherCommand(command: String): String {
-        logger.atInfo().log("+++Cypher command: $command")
+        //logger.atInfo().log("+++Cypher command: $command")
         val session = driver.session()
         lateinit var resultString:String
         session.use {
@@ -55,8 +57,9 @@ object Neo4jConnectionService {
 }
 
 fun main() {
-    val query = "MATCH (N) RETURN COUNT(N)"
-    val result = Neo4jConnectionService.executeCypherCommand(query)
+    val countQuery = "MATCH (N) RETURN COUNT(N)"
+    val result = Neo4jConnectionService.executeCypherCommand(countQuery)
     Neo4jConnectionService.logger.atInfo().log("Number of database nodes = $result")
+
     Neo4jConnectionService.close()
 }
