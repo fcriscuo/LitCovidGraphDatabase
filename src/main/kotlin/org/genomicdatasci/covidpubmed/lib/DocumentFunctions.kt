@@ -7,6 +7,7 @@ package org.genomicdatasci.covidpubmed.lib
 import arrow.core.Either
 import bioc.BioCDocument
 import bioc.BioCPassage
+import com.google.common.flogger.FluentLogger
 import org.genomicdatasci.covidpubmed.io.BioCDocumentSupplier
 import org.genomicdatasci.covidpubmed.model.*
 import kotlin.system.exitProcess
@@ -31,6 +32,7 @@ object DocumentConstants {
     const val REF_TYPE_VALUE = "ref"
     const val ABSTRACT_TYPE_VALUE = "abstract"
 }
+val logger: FluentLogger = FluentLogger.forEnclosingClass();
 
 fun resolveDoi(passage: BioCPassage): String {
     if (passage.infons.containsKey(DocumentConstants.DOI_KEY)) {
@@ -59,10 +61,10 @@ fun resolveReferencePubMedId(passage: BioCPassage): String =
     passage.infons.getOrDefault(DocumentConstants.REF_PUBMED_ID_KEY, "")
 
 fun resolveReferenceDoiId(passage: BioCPassage): String =
-    passage.infons.getOrDefault(DocumentConstants.REF_DOI_KEY,"")
+    passage.infons.getOrDefault(DocumentConstants.REF_DOI_KEY,"NA")
 
 fun resolvePmcId(passage: BioCPassage): String =
-    passage.infons.getOrDefault(DocumentConstants.PMC_ID_KEY, "")
+    passage.infons.getOrDefault(DocumentConstants.PMC_ID_KEY, "NA")
 
 /*
 The PubMed passage is essential for processing a BioCDocument
@@ -102,9 +104,9 @@ fun resolvePubMedPassage(document: BioCDocument): Either<Exception, BioCPassage>
     return Either.Left(Exception("A PubMed passage is not available for document id ${document.iD}"))
 }
 
-fun resolveArticleJournal(pubmedId: String, passage: BioCPassage): JournalIssue {
-    val journalText = passage.infons.getOrDefault(DocumentConstants.JOURNAL_KEY, "")
-    return JournalIssue.parseJournalString(pubmedId, journalText)
+fun resolveArticleJournal(pubmedId: String, passage: BioCPassage, doi:String =" "): JournalIssue {
+    val journalText = passage.infons.getOrDefault(DocumentConstants.JOURNAL_KEY, " ")
+    return JournalIssue.parseJournalString(pubmedId, doi, journalText)
 }
 
 fun resolveAuthorList(pubmedId: String, passage: BioCPassage): List<Author> {
@@ -116,15 +118,15 @@ fun resolveAuthorList(pubmedId: String, passage: BioCPassage): List<Author> {
 // scan every passage in the document for annotations, except those for annotations that
 // belong to references
 
-fun resolveDocumentAnnotations(pubmedId: String, document: BioCDocument): Map<Int, PubMedAnnotation> {
-    val annotationMap = mutableMapOf<Int, PubMedAnnotation>()
+fun resolveDocumentAnnotations(pubmedId: String, document: BioCDocument): Map<Int, org.genomicdatasci.covidpubmed.model.LitCovidAnnotation> {
+    val annotationMap = mutableMapOf<Int, org.genomicdatasci.covidpubmed.model.LitCovidAnnotation>()
     document.passages
         .filter { it -> it.infons.containsKey(DocumentConstants.INFON_SECTION_TYPE_KEY) }
         .filter { it.infons.getValue(DocumentConstants.INFON_SECTION_TYPE_KEY) != DocumentConstants.REF_SECTION_TYPE_VALUE }
         .forEach {
             it.annotations.forEach {
                 run {
-                    val pubmedAnnotation = PubMedAnnotation.parseBioCAnnotation(pubmedId, it)
+                    val pubmedAnnotation = LitCovidAnnotation.parseBioCAnnotation(pubmedId, it)
                     if (!annotationMap.contains(pubmedAnnotation.id)) {
                         annotationMap[pubmedAnnotation.id] = pubmedAnnotation
                     }
@@ -134,13 +136,13 @@ fun resolveDocumentAnnotations(pubmedId: String, document: BioCDocument): Map<In
     return annotationMap.toMap()
 }
 
-fun resolveAnnotationList(pubmedId: String, passage: BioCPassage): List<PubMedAnnotation> =
-    passage.annotations.map { it -> PubMedAnnotation.parseBioCAnnotation(pubmedId, it) }
+fun resolveAnnotationList(pubmedId: String, passage: BioCPassage):
+        List<org.genomicdatasci.covidpubmed.model.LitCovidAnnotation> =
+    passage.annotations.map { it -> LitCovidAnnotation.parseBioCAnnotation(pubmedId, it) }
 
 
 fun processBioCDocument(document: BioCDocument): PubMedArticle? {
-    val pubMedEither = resolvePubMedPassage(document)
-    when (pubMedEither) {
+    when (val pubMedEither = resolvePubMedPassage(document)) {
         is Either.Right -> {
             val pubmedPassage = pubMedEither.value
             return processPubMedPassage(document, pubmedPassage)
@@ -176,13 +178,13 @@ fun referencePassagePredicate(passage:BioCPassage):Boolean =
 Function to resolve all unique annotations in a BioCDocument and
 associate them with a PubMed Id
  */
-fun resolveAnnotationMap(document: BioCDocument, pubmedId: String): Map<Int, PubMedAnnotation> {
-    val annotationMap = mutableMapOf<Int, PubMedAnnotation>()
+fun resolveAnnotationMap(document: BioCDocument, pubmedId: String): Map<Int, org.genomicdatasci.covidpubmed.model.LitCovidAnnotation> {
+    val annotationMap = mutableMapOf<Int, org.genomicdatasci.covidpubmed.model.LitCovidAnnotation>()
     document.passages.forEach { it ->
         run {
             it.annotations.forEach { it ->
                 run {
-                    val annotation = PubMedAnnotation.parseBioCAnnotation(pubmedId, it)
+                    val annotation = LitCovidAnnotation.parseBioCAnnotation(pubmedId, it)
                     if (!annotationMap.containsKey(annotation.id)) {
                         annotationMap.put(annotation.id, annotation)
                     }
@@ -218,13 +220,11 @@ fun processPubMedPassage(document: BioCDocument, passage: BioCPassage): PubMedAr
     val doi = resolveDoi(passage)
     val title = passage.text
     val abstract = resolveArticleAbstract(document)
-    val journal = resolveArticleJournal(pubmedId, passage)
+    val journal = resolveArticleJournal(pubmedId,  passage, doi)
     val authorList = resolveAuthorList(pubmedId, passage)
-    // need to scan the entire document for annotations and references
-    // create a placeholder list
     val annotationMap = resolveAnnotationMap(document, pubmedId)
     val references = resolveReferenceList(document, pubmedId)
-    return PubMedArticle(
+    return PubMedArticle( listOf<String>("PubMedArticle","Covid"),
         pubmedId, pmcId, doi, title, abstract,
         authorList, journal, annotationMap, references
     )

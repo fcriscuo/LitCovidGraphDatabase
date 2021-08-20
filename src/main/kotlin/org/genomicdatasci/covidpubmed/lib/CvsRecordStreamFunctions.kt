@@ -1,6 +1,6 @@
 package org.genomicdatasci.covidpubmed.lib
 
-import mu.KotlinLogging
+import com.google.common.flogger.FluentLogger
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
@@ -92,11 +92,11 @@ class DelimitedRecordSplitIteratorSupplier(val path: Path, @Nonnull vararg headi
     var columnHeadings = headings
 
     companion object {
-        val logger = KotlinLogging.logger {}
+        val logger: FluentLogger = FluentLogger.forEnclosingClass();
     }
 
     override fun get(): Stream<CSVRecord?> {
-        logger.info { "Processing delimited file: ${path.fileName}" }
+        logger.atInfo().log( "Processing delimited file: ${path.fileName}" )
         val parser = CSVParser.parse(
             path.toFile(), Charset.defaultCharset(),
             csvFormat.withHeader(*columnHeadings).withQuote(null).withIgnoreEmptyLines()
