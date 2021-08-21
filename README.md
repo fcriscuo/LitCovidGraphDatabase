@@ -38,7 +38,7 @@ After data from the LitCovid BioC file has been loaded, it is
 supplemented by data from the COVID-19 Knowledge Graph Project
 (https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com/historical_releases.html
 ). Currently, only the metadata file available from this data 
-source is used. This file has basic information for over 740000 
+source is used. This file (Aug 2021),has basic information for over 740000 
 articles considered relevant to Covid. These data are used to 
 fill in any gaps in the data loaded from the LitCovid data source.
 At this time, no new PubMedArticle nodes are created from this
@@ -49,3 +49,24 @@ Kotlin 1.5 (https://kotlinlang.org/). Kotlin was chosen because
 it supports most of the functional programming capabilities
 associated with scala while retaining complete compatibility 
 with Java.
+
+### Instructions
+
+1. Ensure that two (2) environment properties, **NEO4J_USER**  and **NEO4J_PASSWORD**, are defined in the user's run time environment
+   with the appropriate values.
+2. Execute org.genomicdatasci.covidpubmed.app.LitCovidDatabaseLoader *filename*
+   where filename is the full path name of the litcovid2pubtator.xml file
+   downloaded from the LitCovid project.
+3. (Optional) Execute org.genomicdatasci.covidpubmed.app.MetadataLoader *filename*
+   where filename is the full path to the metadata.csv file available from
+   the CORD-19 project.
+
+
+### ToDo Items
+
+1. Refactor the DAOs to use Neo4j OGM annotations. This will facilitate
+   processing the results of Neo4j queries
+2. Improve the logging configuration
+3. Implement a restart capability to handle database outages during data loading
+   Possibly using Kotlin sequence chunks
+

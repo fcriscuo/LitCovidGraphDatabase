@@ -44,9 +44,9 @@ class JournalIssueDao (private val journalIssue: JournalIssue): LitCovidDao() {
     fun persistJournalIssue () = run {
         if(journalIssue.isValid()) {
             val mergeResult = executeMergeCommand(generateCypherMergeCommand())
-            logger.atInfo().log("Merge completed for Journal Issue: $mergeResult")
-            val setResult = setLabels()
-            logger.atInfo().log("Labels for JournalIssue ${journalIssue.id} = $setResult")
+          //  logger.atInfo().log("Merge completed for Journal Issue: $mergeResult")
+            //val setResult = setLabels()
+           // logger.atInfo().log("Labels for JournalIssue ${journalIssue.id} = $setResult")
             val relResult = setRelationshipToPubMedArticle()
             logger.atInfo().log(
                 "Relationship from PubMedArticle ${journalIssue.pubmedId} to JournalIssue " +

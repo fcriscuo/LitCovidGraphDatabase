@@ -41,7 +41,7 @@ class BioCDocumentSupplier(val fileName: String) {
 
     /*
     Function to retrieve the next BioCDocument from the specified BioC file
-    An Either object is return to indicate when all the BioCDocuments in the
+    An Either object is returned to indicate when all the BioCDocuments in the
     file have been supplied
      */
     fun get(): Either<Exception, BioCDocument> {
@@ -62,7 +62,7 @@ class BioCDocumentSupplier(val fileName: String) {
 }
 
 fun main(args: Array<String>) {
-    val filename = if (args.size > 0) args[0] else "data/xml/NLMIAT.BioC.xml"
+    val filename = if (args.isNotEmpty()) args[0] else "data/xml/NLMIAT.BioC.xml"
     val supplier = BioCDocumentSupplier(filename)
     var count = 0
     while (true) {
