@@ -1,4 +1,4 @@
-##LitCovidGraphDatabase
+## LitCovidGraphDatabase
 
 A collection of Kotlin and Java components to load data from 
 the NCBI LitCovid (https://www.ncbi.nlm.nih.gov/research/coronavirus/)
