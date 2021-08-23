@@ -4,7 +4,6 @@
 
 package org.genomicdatasci.covidpubmed.dao
 
-import com.google.common.flogger.FluentLogger
 import org.genomicdatasci.covidpubmed.lib.processNodeLabels
 import org.genomicdatasci.covidpubmed.model.JournalIssue
 import org.genomicdatasci.covidpubmed.service.graphdb.Neo4jConnectionService
