@@ -6,7 +6,7 @@ package org.genomicdatasci.covidpubmed.service.property
  *
  */
 object DatafilesPropertiesService : AbstractPropertiesService() {
-    const val PROPERTIES_FILE = "/datafiles.properties"
+    private const val PROPERTIES_FILE = "/datafiles.properties"
 
     init {
         resolveFrameworkProperties(PROPERTIES_FILE)
@@ -14,7 +14,7 @@ object DatafilesPropertiesService : AbstractPropertiesService() {
 }
 
 object FrameworkPropertiesService : AbstractPropertiesService() {
-    const val PROPERTIES_FILE = "/framework.properties"
+    private const val PROPERTIES_FILE = "/framework.properties"
 
     init {
         resolveFrameworkProperties(PROPERTIES_FILE)
