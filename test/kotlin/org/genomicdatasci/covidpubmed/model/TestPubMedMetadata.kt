@@ -18,10 +18,4 @@ fun metadataSequence(): Sequence<PubMedMetadata>  {
 
     fun main() {
         metadataSequence().take(100).forEach {  println("PubMed Id: ${it.pubmedId}   URL: ${it.url}") }
-
-//        val supplier = CsvRecordStreamSupplier(Paths.get("./data/metadata_sample.csv"))
-//        supplier.get()
-//            .map { PubMedMetadata.parseCSVRecord(it) }
-//            .limit(100)
-//            .forEach { println("PubMed Id: ${it.pubmedId}   URL: ${it.url}") }
     }

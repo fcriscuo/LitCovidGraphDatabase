@@ -22,9 +22,6 @@ class PubMedReferenceDao( val reference: PubMedReference): LitCovidDao() {
 
     private fun mergePubMedReference(): String {
         val mergeCypher = generateCypherMergeCommand()
-        // display generated Cypher during development
-        // TODO: remove logging stmt
-        logger.atInfo().log(mergeCypher)
         return Neo4jConnectionService.executeCypherCommand(mergeCypher)
     }
 
