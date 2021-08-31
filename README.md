@@ -26,7 +26,7 @@ load large data sources.
 
 Data for each PubMed document is loaded into a Neo4j 4.3.2 
 Community Edition database. The nodes are: PubMedArticle, 
-JournalIssue, Author, Annotation. There are two (2) types
+JournalIssue, Author, and Annotation. There are two (2) types
 of PubMedArticle nodes. The first type represents articles 
 classified as relevant to Covid and incorporate a Covid label.
 The second type represent PubMed articles referenced by 
@@ -50,23 +50,30 @@ it supports most of the functional programming capabilities
 associated with scala while retaining complete compatibility 
 with Java.
 
+Programmatic queries to the database are supported by Neo4j's Object Graph Mapper
+(OGM) library (https://neo4j.com/docs/ogm-manual/current/introduction/). This 
+technology was chosen because it facilitates mapping the Result object from
+a query to domain objects.
+
 ### Instructions
 
 1. Ensure that two (2) environment properties, **NEO4J_USER**  and **NEO4J_PASSWORD**, are defined in the user's run time environment
    with the appropriate values.
-2. Execute org.genomicdatasci.covidpubmed.app.LitCovidDatabaseLoader *filename*
+2. First application run, execute org.genomicdatasci.covidpubmed.neo4j.Neo4jConstraints
+   to define database constraints.
+3. Execute org.genomicdatasci.covidpubmed.app.LitCovidDatabaseLoader *filename*
    where filename is the full path name of the litcovid2pubtator.xml file
    downloaded from the LitCovid project.
-3. (Optional) Execute org.genomicdatasci.covidpubmed.app.MetadataLoader *filename*
+4. (Optional) Execute org.genomicdatasci.covidpubmed.app.MetadataLoader *filename*
    where filename is the full path to the metadata.csv file available from
    the CORD-19 project.
 
 
 ### ToDo Items
 
-1. Refactor the DAOs to use Neo4j OGM annotations. This will facilitate
-   processing the results of Neo4j queries
-2. Improve the logging configuration
-3. Implement a restart capability to handle database outages during data loading
-   Possibly using Kotlin sequence chunks
+1. Implement a restart capability to handle database outages during data loading
+   Possibly using Kotlin sequence chunks.
+2. Implement an update capability to add newly released LitCovid PubMedArticles
+3. Add more tests.
+
 
