@@ -52,9 +52,8 @@ private fun delimitedFileHeaderMapProducer(path: Path, format: CSVFormat): Map<S
         }
     } catch (e: IOException) {
         e.printStackTrace()
-    } finally {
-        return headerMap
     }
+    return headerMap
 }
 
 /**
@@ -89,7 +88,7 @@ class DelimitedRecordSplitIteratorSupplier(val path: Path, @Nonnull vararg headi
     } else {
         CSVFormat.TDF
     }
-    var columnHeadings = headings
+    private var columnHeadings = headings
 
     companion object {
         val logger: FluentLogger = FluentLogger.forEnclosingClass();

@@ -30,7 +30,7 @@ class PubMedArticleDao(val article: PubMedArticle) {
         val mergeCypher = generateCypherMergeCommand()
         // display generated Cypher during development
         // TODO: remove logging stmt
-        logger.atInfo().log(mergeCypher)
+        //logger.atInfo().log(mergeCypher)
         return Neo4jConnectionService.executeCypherCommand(mergeCypher)
     }
 
@@ -38,7 +38,7 @@ class PubMedArticleDao(val article: PubMedArticle) {
         val labels = article.labels.joinToString(separator = ":")
         val setLabelsCypher = "MATCH (p:PubMedArticle{pubmed_id: ${article.pubmedId} })" +
                 " SET p:${labels} RETURN labels(p) AS labels"
-        logger.atInfo().log(setLabelsCypher)
+       // logger.atInfo().log(setLabelsCypher)
         return Neo4jConnectionService.executeCypherCommand(setLabelsCypher)
     }
 

@@ -5,11 +5,14 @@
 package org.genomicdatasci.covidpubmed.service.graphdb
 
 import com.google.common.flogger.FluentLogger
-import org.neo4j.driver.AuthTokens
-import org.neo4j.driver.GraphDatabase
-import org.neo4j.driver.Result
-import java.util.*
-
+import com.google.common.flogger.StackSize
+import org.genomicdatasci.covidpubmed.lib.getEnvVariable
+import org.genomicdatasci.covidpubmed.service.graphdb.Neo4jConnectionService.currentTime
+import org.genomicdatasci.covidpubmed.service.property.DatafilesPropertiesService
+import org.neo4j.driver.*
+import java.io.File
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 
 /**
  * Responsible for establishing a connection to a local Neo4j database
@@ -18,16 +21,28 @@ import java.util.*
  * Created by fcriscuo on 2021Aug06
  */
 object Neo4jConnectionService {
-    private val neo4jAccount = System.getenv("NEO4J_ACCOUNT")
-    private val neo4jPassword = System.getenv("NEO4J_PASSWORD")
-    private const val uri = "bolt://localhost:7687"
-    private val driver = GraphDatabase.driver(uri, AuthTokens.basic(neo4jAccount, neo4jPassword))
-    val logger: FluentLogger = FluentLogger.forEnclosingClass();
 
-    fun close() = driver.close()
+    val logger: FluentLogger = FluentLogger.forEnclosingClass();
+    private val neo4jAccount = getEnvVariable("NEO4J_ACCOUNT")
+    private val neo4jPassword = getEnvVariable("NEO4J_PASSWORD")
+    private val simpleDateFormat:SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd_HH:mm")
+    val currentTime:String = simpleDateFormat.format(LocalDateTime.now())
+    private val cypherPath = resolveCypherLogFileName()
+    private val cypherFileWriter = File(cypherPath).bufferedWriter()
+    private const val uri = "bolt://localhost:7687"
+    val config: Config = Config.builder().withLogging(Logging.slf4j()).build()
+    private val driver = GraphDatabase.driver(
+        uri, AuthTokens.basic(neo4jAccount, neo4jPassword),
+        config
+    )
+
+    fun close() {
+        driver.close()
+        cypherFileWriter.close()
+    }
 
     /*
-    Constraint definitions fo not return a result
+    Constraint definitions do not return a result
      */
     fun defineDatabaseConstraint(command: String) {
         val session = driver.session()
@@ -38,28 +53,31 @@ object Neo4jConnectionService {
         }
     }
 
-
     fun executeCypherCommand(command: String): String {
-        //logger.atInfo().log("+++Cypher command: $command")
+        Neo4jConnectionService.cypherFileWriter.write("$command\n")
         val session = driver.session()
-        lateinit var resultString:String
+        lateinit var resultString: String
         session.use {
-            session.writeTransaction { tx ->
-                val result: Result = tx.run(command)
-                  resultString = when (result.hasNext()) {
-                    true -> result.single()[0].toString()
-                    false -> ""
-                }
-            }!!
-            return resultString.toString()
+            try {
+                session.writeTransaction { tx ->
+                    val result: Result = tx.run(command)
+                    resultString = when (result.hasNext()) {
+                        true -> result.single()[0].toString()
+                        false -> ""
+                    }
+                }!!
+                return resultString.toString()
+            } catch (e: Exception) {
+                logger.atSevere().withStackTrace(StackSize.FULL)
+                    .withCause(e).log(e.message)
+                logger.atSevere().log("Cypher command: $command")
+            }
         }
+        return ""
     }
 }
 
-fun main() {
-    val countQuery = "MATCH (N) RETURN COUNT(N)"
-    val result = Neo4jConnectionService.executeCypherCommand(countQuery)
-    Neo4jConnectionService.logger.atInfo().log("Number of database nodes = $result")
-
-    Neo4jConnectionService.close()
-}
+fun resolveCypherLogFileName() =
+    DatafilesPropertiesService.resolvePropertyAsString("neo4j.log.dir") +
+            DatafilesPropertiesService.resolvePropertyAsString("neo4j.log.file.prefix") +
+            "_" +currentTime + ".log"

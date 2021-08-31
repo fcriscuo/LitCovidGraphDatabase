@@ -52,7 +52,8 @@ class LitCovidDatabaseLoader {
     which are referenced by other LitCovid entries from independent references
     All the LitCovid entries must have been loaded into the database to make that distinction
      */
-    private fun processBioCFileForPubMedReferences(filename: String) {
+    fun processBioCFileForPubMedReferences(filename: String) {
+        logger.atInfo().log("Processing $filename for PubMed references " )
         val supplier = BioCDocumentSupplier(filename)
         while (true) {
             when (val retEither = supplier.get()) {
@@ -131,4 +132,5 @@ fun main(args: Array<String>) {
     val filename = if (args.isNotEmpty()) args[0] else "data/xml/sample_litcovid2pubtator.xml"
     logger.atInfo().log("Processing BioC file: $filename")
     LitCovidDatabaseLoader().processBioCFileForPubMedArticles(filename)
+    logger.atInfo().log("FINIS......")
 }

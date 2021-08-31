@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.biodatagraphdb</groupId>
+    <groupId>org.genomicdatasci</groupId>
     <artifactId>covidpubmed</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -14,21 +14,18 @@
         <bundle.symbolicName.prefix>org.genomicdatasci.covidpubmed</bundle.symbolicName.prefix>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-        <jooq.version>3.12.3</jooq.version>
         <apache.commons.lang3.version>3.12.0</apache.commons.lang3.version>
         <apache.commons.io.version>2.11.0</apache.commons.io.version>
         <apache.log4j.version>1.2.17</apache.log4j.version>
         <apache.csv.version>1.8</apache.csv.version>
         <guava.version>30.1.1-jre</guava.version>
-        <eclipse.collections.version>10.4.0</eclipse.collections.version>
         <scala_version>2.12.13</scala_version>
         <scalatest.version>3.2.9</scalatest.version>
         <eclipse.vertx.version>3.5.1</eclipse.vertx.version>
         <neo4j.version>4.3.2</neo4j.version>
         <neo4j.driver.version>4.3.4</neo4j.driver.version>
-        <lombok.version>1.18.20</lombok.version>
         <cfg4j.version>4.4.1</cfg4j.version>
-        <kotlin.version>1.5.30-M1</kotlin.version>
+        <kotlin.version>1.5.30</kotlin.version>
         <kotlintest.version>1.5.21</kotlintest.version>
         <mockk.version>1.12.0</mockk.version>
         <arrow-kt.version>0.13.2</arrow-kt.version>
@@ -72,19 +69,7 @@
     </pluginRepositories>
 
     <dependencies>
-
-        <dependency>
-            <groupId>com.google.flogger</groupId>
-            <artifactId>flogger-system-backend</artifactId>
-            <version>0.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.flogger</groupId>
-            <artifactId>flogger</artifactId>
-            <version>0.6</version>
-        </dependency>
-
+        <!-- Neo4j front end requires scala 2.12.13-->
         <!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -92,6 +77,43 @@
             <version>2.12.13</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.flogger</groupId>
+            <artifactId>flogger-log4j-backend</artifactId>
+            <version>0.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.jmx</groupId>
+                    <artifactId>jmxri</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jdmk</groupId>
+                    <artifactId>jmxtools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.jms</groupId>
+                    <artifactId>jms</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.flogger</groupId>
+            <artifactId>flogger</artifactId>
+            <version>0.6</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.flogger/flogger-system-backend -->
+        <dependency>
+            <groupId>com.google.flogger</groupId>
+            <artifactId>flogger-system-backend</artifactId>
+            <version>0.6</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.12.4</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin -->
         <dependency>
@@ -155,16 +177,6 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.7.32</version>
         </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.5</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.2.5</version>
-        </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.arrow-kt/arrow-core -->
         <dependency>
@@ -221,7 +233,6 @@
             <version>${apache.commons.lang3.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.cfg4j</groupId>
             <artifactId>cfg4j-core</artifactId>
@@ -235,14 +246,6 @@
             <version>${cfg4j.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.neo4j/neo4j-graph-algo -->
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-graph-algo</artifactId>
-            <version>${neo4j.version}</version>
-        </dependency>
-
-
         <!-- https://mvnrepository.com/artifact/com.jcraft/jsch -->
         <dependency>
             <groupId>com.jcraft</groupId>
@@ -250,49 +253,74 @@
             <version>0.1.55</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!--  eclipse collections  -->
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-            <version>${eclipse.collections.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.eclipse.collections/eclipse-collections -->
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-            <version>${eclipse.collections.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.eclipse.collections/eclipse-collections-forkjoin -->
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-forkjoin</artifactId>
-            <version>${eclipse.collections.version}</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${apache.commons.io.version}</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/log4j/log4j -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.14.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.14.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.14.1</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>${apache.log4j.version}</version>
+            <version>1.2.17</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>apache-log4j-extras</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-graphdb-api</artifactId>
+            <version>${neo4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j</artifactId>
+            <version>${neo4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-ogm-core</artifactId>
+            <version>3.2.25</version>
+        </dependency>
+
+        <!-- Only add if you're using the Bolt driver -->
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-ogm-bolt-driver</artifactId>
+            <version>3.2.25</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.neo4j/neo4j-kernel -->
@@ -309,6 +337,13 @@
             <version>${neo4j.driver.version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.neo4j/neo4j-graph-algo -->
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-graph-algo</artifactId>
+            <version>${neo4j.version}</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-csv -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -323,7 +358,6 @@
             <version>1.5.21</version>
             <scope>runtime</scope>
         </dependency>
-
 
         <!-- https://mvnrepository.com/artifact/io.kotlintest/kotlintest-core -->
         <dependency>
@@ -348,20 +382,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-graphdb-api</artifactId>
-            <version>${neo4j.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j</artifactId>
-            <version>${neo4j.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-maven-allopen -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-allopen</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
 
@@ -378,14 +407,6 @@
             <artifactId>stax-utils</artifactId>
             <version>snapshot-20040917</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/net.java.dev.stax-utils/stax-utils
-        <dependency>
-            <groupId>net.java.dev.stax-utils</groupId>
-            <artifactId>stax-utils</artifactId>
-            <version>20070216</version>
-        </dependency>
-        -->
 
         <!-- https://mvnrepository.com/artifact/org.codehaus.woodstox/stax2-api -->
         <dependency>
@@ -450,6 +471,65 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.0.2</version>
                 </plugin>
+                <plugin>
+                    <artifactId>kotlin-maven-plugin</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                    <version>${kotlin.version}</version>
+
+                    <configuration>
+                        <compilerPlugins>
+                            <!-- Or "jpa" for JPA support -->
+                            <plugin>no-arg</plugin>
+                        </compilerPlugins>
+
+                        <pluginOptions>
+                            <option>no-arg:annotation=org.neo4j.ogm.annotation.NodeEntity</option>
+                            <option>no-arg:annotation=org.neo4j.ogm.annotation.RelationshipEntity</option>
+                            <!-- Call instance initializers in the synthetic constructor -->
+                            <!-- <option>no-arg:invokeInitializers=true</option> -->
+                        </pluginOptions>
+                    </configuration>
+
+                    <dependencies>
+                        <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-maven-noarg -->
+                        <dependency>
+                            <groupId>org.jetbrains.kotlin</groupId>
+                            <artifactId>kotlin-maven-noarg</artifactId>
+                            <version>1.5.10</version>
+                        </dependency>
+
+                    </dependencies>
+                </plugin>
+<!--                <plugin>-->
+<!--                    <artifactId>kotlin-maven-plugin</artifactId>-->
+<!--                    <groupId>org.jetbrains.kotlin</groupId>-->
+<!--                    <version>${kotlin.version}</version>-->
+
+<!--                    <configuration>-->
+<!--                        <compilerPlugins>-->
+<!--                            &lt;!&ndash; Or "spring" for the Spring support &ndash;&gt;-->
+<!--                            <plugin>all-open</plugin>-->
+<!--                        </compilerPlugins>-->
+
+<!--                        <pluginOptions>-->
+<!--                            &lt;!&ndash; Each annotation is placed on its own line &ndash;&gt;-->
+<!--                            <option>all-open:annotation=org.neo4j.ogm.annotation.NodeEntity</option>-->
+<!--                            <option>all-open:annotation=org.neo4j.ogm.annotation.RelationshipEntity</option>-->
+<!--                            <option>all-open:annotation=org.neo4j.ogm.annotation.Relationship</option>-->
+<!--                            <option>all-open:annotation=org.neo4j.ogm.annotation.Id</option>-->
+<!--                        </pluginOptions>-->
+<!--                    </configuration>-->
+<!--                    <dependencies>-->
+
+<!--                        <dependency>-->
+<!--                            <groupId>org.jetbrains.kotlin</groupId>-->
+<!--                            <artifactId>kotlin-maven-allopen</artifactId>-->
+<!--                            <version>1.5.30</version>-->
+<!--                        </dependency>-->
+
+<!--                    </dependencies>-->
+
+<!--                </plugin>-->
             </plugins>
         </pluginManagement>
         <resources>
@@ -497,7 +577,7 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-                <version>1.5.10</version>
+                <version>${kotlin.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -508,7 +588,7 @@
                         <configuration>
                             <sourceDirs>
                                 <source>src/main/java</source>
-                                <source>src/main/scala</source>
+                                <source>src/main/kotlin</source>
                             </sourceDirs>
                         </configuration>
                     </execution>
@@ -521,7 +601,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <jvmTarget>1.8</jvmTarget>
+                    <jvmTarget>16</jvmTarget>
                 </configuration>
             </plugin>
             <plugin>
@@ -529,9 +609,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <release>12</release>
-                    <source>14</source>
-                    <target>14</target>
+                    <release>16</release>
+                    <source>16</source>
+                    <target>16</target>
                 </configuration>
                 <executions>
                     <execution>
@@ -565,8 +645,5 @@
                 </executions>
             </plugin>
         </plugins>
-
     </build>
-
-
 </project>

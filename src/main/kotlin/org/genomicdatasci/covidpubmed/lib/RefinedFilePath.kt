@@ -17,10 +17,10 @@ import java.util.stream.Stream
 inline class RefinedFilePath (val filePathName: String) {
 
     companion object: Refined<String> {
-        override fun isValid(filePathName: String): Boolean {
-            val dirPath = Paths.get(FilenameUtils.getFullPathNoEndSeparator(filePathName))
-            val fileName = FilenameUtils.getName(filePathName)
-            val filePrefix = FilenameUtils.getPrefix(filePathName)
+        override fun isValid(value: String): Boolean {
+            val dirPath = Paths.get(FilenameUtils.getFullPathNoEndSeparator(value))
+            val fileName = FilenameUtils.getName(value)
+            val filePrefix = FilenameUtils.getPrefix(value)
             if(filePrefix == File.separator && fileName != null
                 && Files.isWritable(dirPath)) {
                 return true

@@ -4,7 +4,6 @@
 
 package org.genomicdatasci.covidpubmed.dao
 
-import com.google.common.flogger.FluentLogger
 import org.genomicdatasci.covidpubmed.lib.processNodeLabels
 import org.genomicdatasci.covidpubmed.model.JournalIssue
 import org.genomicdatasci.covidpubmed.service.graphdb.Neo4jConnectionService
@@ -26,7 +25,7 @@ class JournalIssueDao (private val journalIssue: JournalIssue): LitCovidDao() {
         val labels = processNodeLabels(journalIssue.labels)
         val setLabelsCypher = "MATCH (ji:JournalIssue{id: ${journalIssue.id.toString()} })" +
                 " SET ji:${labels} RETURN labels(ji) AS labels"
-        logger.atInfo().log(setLabelsCypher)
+       // logger.atInfo().log(setLabelsCypher)
         return Neo4jConnectionService.executeCypherCommand(setLabelsCypher)
     }
 
@@ -37,7 +36,7 @@ class JournalIssueDao (private val journalIssue: JournalIssue): LitCovidDao() {
         val relationshipCypher = "MATCH (pma:PubMedArticle), (ji:JournalIssue) WHERE " +
                 "pma.pubmed_id = ${journalIssue.pubmedId} AND ji.id = ${journalIssue.id} " +
                 "MERGE (pma) - [r:HAS_JOURNAL_ISSUE] -> (ji) RETURN r"
-        logger.atInfo().log(relationshipCypher)
+        //logger.atInfo().log(relationshipCypher)
         return Neo4jConnectionService.executeCypherCommand(relationshipCypher)
     }
 

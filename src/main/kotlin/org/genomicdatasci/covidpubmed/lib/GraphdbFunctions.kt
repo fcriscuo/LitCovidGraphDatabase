@@ -12,8 +12,9 @@ class GraphdbFunctions ( val graphDb: GraphDatabaseService){
 
     var defineRelationshipPropertyConsumer =
         BiConsumer { rel: Relationship, relPair: Pair<String?, String?> ->
-            graphDb.beginTx().use({ tx -> rel.setProperty(relPair.first, relPair.second) }) }
+            graphDb.beginTx().use { _ -> rel.setProperty(relPair.first, relPair.second) }
+        }
 
     fun defineRelationshipProperty(rel: Relationship, relPair: Pair<String, String>) =
-        graphDb.beginTx().use { tx -> rel.setProperty(relPair.first, relPair.second) }
+        graphDb.beginTx().use { rel.setProperty(relPair.first, relPair.second) }
 }

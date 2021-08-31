@@ -22,9 +22,6 @@ class PubMedReferenceDao( val reference: PubMedReference): LitCovidDao() {
 
     private fun mergePubMedReference(): String {
         val mergeCypher = generateCypherMergeCommand()
-        // display generated Cypher during development
-        // TODO: remove logging stmt
-        logger.atInfo().log(mergeCypher)
         return Neo4jConnectionService.executeCypherCommand(mergeCypher)
     }
 
@@ -39,7 +36,7 @@ class PubMedReferenceDao( val reference: PubMedReference): LitCovidDao() {
             val labels = processNodeLabels(novelLabels)
             val setLabelsCypher = "MATCH (pmr:PubMedArticle{id: ${reference.pubmedId} })" +
                     " SET pmr:${labels} RETURN labels(pmr) AS labels "
-            logger.atInfo().log(setLabelsCypher)
+           // logger.atInfo().log(setLabelsCypher)
             return Neo4jConnectionService.executeCypherCommand(setLabelsCypher)
         }
         return ""
@@ -49,7 +46,7 @@ class PubMedReferenceDao( val reference: PubMedReference): LitCovidDao() {
         val relationshipCypher = "MATCH (pma:PubMedArticle), (pmr:PubMedReference) WHERE " +
                 "pma.pubmed_id = ${reference.parentPubMedId} AND pmr.pubmed_id = ${reference.pubmedId} " +
                 "MERGE (pma) - [r:HAS_REFERENCE] -> (pmr) RETURN r"
-        logger.atInfo().log(relationshipCypher)
+        //logger.atInfo().log(relationshipCypher)
         return Neo4jConnectionService.executeCypherCommand(relationshipCypher)
     }
 
