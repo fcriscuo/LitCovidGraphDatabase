@@ -33,7 +33,7 @@ class AuthorDao(private val author: Author): LitCovidDao(){
         val labels = processNodeLabels(author.labels)
         val setLabelsCypher = "MATCH (au:Author{id: ${author.id.toString()} })" +
                 " SET au:${labels} RETURN labels(au) AS labels"
-        logger.atInfo().log(setLabelsCypher)
+       // logger.atInfo().log(setLabelsCypher)
         return Neo4jConnectionService.executeCypherCommand(setLabelsCypher)
     }
 
@@ -44,7 +44,7 @@ class AuthorDao(private val author: Author): LitCovidDao(){
         val relationshipCypher = "MATCH (pma:PubMedArticle), (au:Author) WHERE " +
                 "pma.pubmed_id = ${author.pubmedId} AND au.id = ${author.id} " +
                 "MERGE (pma) - [r:HAS_AUTHOR] -> (au) RETURN r"
-        logger.atInfo().log(relationshipCypher)
+        //logger.atInfo().log(relationshipCypher)
         return Neo4jConnectionService.executeCypherCommand(relationshipCypher)
     }
 

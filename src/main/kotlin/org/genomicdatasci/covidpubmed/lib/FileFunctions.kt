@@ -11,6 +11,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
 import java.nio.file.Path
+import java.util.*
 import java.util.zip.GZIPInputStream
 import javax.annotation.Nullable
 
@@ -20,9 +21,9 @@ import javax.annotation.Nullable
  */
 
 object LitCovidFileUtils {
-    val BASE_DATA_DIRECTORY = DatafilesPropertiesService.resolvePropertyAsString("base.data.path") ?: "/tmp"
-    val BASE_SUBDIRECTORY_NAME = DatafilesPropertiesService.resolvePropertyAsString("base.subdirectory.name") ?: "data"
-    val fileSeparator = System.getProperty("file.separator")
+    private val BASE_DATA_DIRECTORY = DatafilesPropertiesService.resolvePropertyAsString("base.data.path") ?: "/tmp"
+    private val BASE_SUBDIRECTORY_NAME = DatafilesPropertiesService.resolvePropertyAsString("base.subdirectory.name") ?: "data"
+    private val fileSeparator:String = System.getProperty("file.separator")
     val compressedFileExtensions = listOf<String>("gz","zip")
 
     @JvmStatic
@@ -39,7 +40,7 @@ Function to delete a directory recursively
     }
 
     fun resolveDataSourceFromUrl(url: URL): String {
-        val host = url.host.toUpperCase()
+        val host = url.host.uppercase(Locale.getDefault())
         return when {
             host.contains("EBI") -> "EBI"
             host.contains("ENSEMBL") -> "ENSEMBL"
@@ -56,20 +57,16 @@ Function to delete a directory recursively
     }
 
     fun resolveLocalFileNameFromPropertyPair(propertyPair: Pair<String, String>): Either<Exception, String> {
-        if (BASE_DATA_DIRECTORY != null) {
-            val subdirectory = resolveDataSubDirectoryFromPropertyName(propertyPair.first)
-            val localPath = subdirectory + fileSeparator + resolveSourceFileName(propertyPair.second)
-            return Either.Right(localPath)
-        } else {
-            return Either.Left(IOException("base.data.path property not defined"))
-        }
+        val subdirectory = resolveDataSubDirectoryFromPropertyName(propertyPair.first)
+        val localPath = subdirectory + fileSeparator + resolveSourceFileName(propertyPair.second)
+        return Either.Right(localPath)
     }
 
     fun resolveSourceFileName(remotePath: String) =
         remotePath.split(fileSeparator).last()
 
 
-    fun resolveDataSubDirectoryFromPropertyName(propertyName: String): String {
+    private fun resolveDataSubDirectoryFromPropertyName(propertyName: String): String {
         if (propertyName.startsWith(BASE_SUBDIRECTORY_NAME.toString())) {
             return BASE_DATA_DIRECTORY.toString() + fileSeparator + propertyName.replace(".", fileSeparator)
         }
@@ -92,19 +89,18 @@ Function to delete a directory recursively
      */
     fun retrieveRemoteFileByDatafileProperty(propertyPair: Pair<String, String>): Either<Exception, String> {
         val urlConnection = URL(propertyPair.second)
-        val local = resolveLocalFileNameFromPropertyPair(propertyPair)
-        when (local) {
+        when (val local = resolveLocalFileNameFromPropertyPair(propertyPair)) {
             is Either.Right -> {
                 val localFilePath = local.value
                 urlConnection.openConnection()
-                try {
+                return try {
                     FileUtils.copyInputStreamToFile(urlConnection.openStream(), File(localFilePath))
                     if (FilenameUtils.getExtension(localFilePath) in compressedFileExtensions) {
                         gunzipFile(localFilePath)
                     }
-                    return Either.Right("${propertyPair.second} downloaded to  $localFilePath")
+                    Either.Right("${propertyPair.second} downloaded to  $localFilePath")
                 } catch (e: Exception) {
-                    return Either.Left(e)
+                    Either.Left(e)
                 }
             }
             is Either.Left -> return Either.Left(local.value)

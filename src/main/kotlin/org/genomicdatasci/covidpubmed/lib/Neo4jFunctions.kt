@@ -22,7 +22,6 @@ fun countPubMedArticleNodes():Int {
     return Neo4jConnectionService.executeCypherCommand(cypher).toInt()
 }
 
-
 /*
 This function is prone to Exceptions due to invalid input data
  */
@@ -40,20 +39,4 @@ fun pubMedNodeExistsPredicate (pubmedId:String): Boolean {
         return false
     }
     return false
-}
-
-//fun retrievePubMedArticleByPubMedId(pubmedId: String): Either<Exception, PubMedArticle >{
-//    val query = "MATCH (pma:PubMedArticle {pubmed_id: $pubmedId} return pma"
-//    if (pubMedNodeExistsPredicate(pubmedId)) {
-//        val article = Neo4jConnectionService.executeCypherCommand(query)
-//    }
-//
-//}
-
-/*
-stand-alone testing
- */
-fun main() {
-    val count = countPubMedArticleNodes()
-    println(count)
 }

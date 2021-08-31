@@ -27,7 +27,7 @@ class AnnotationDao (val annotation: LitCovidAnnotation) {
         val mergeCypher = generateCypherMergeCommand()
         // display generated Cypher during development
         // TODO: remove logging stmt
-        logger.atInfo().log(mergeCypher)
+       // logger.atInfo().log(mergeCypher)
         return Neo4jConnectionService.executeCypherCommand(mergeCypher).toString()
     }
     private fun setLabels():String {
@@ -41,7 +41,7 @@ class AnnotationDao (val annotation: LitCovidAnnotation) {
             val labels = processNodeLabels(novelLabels)
             val setLabelsCypher = "MATCH (a:Annotation{id: ${annotation.id.toString()} })" +
                     " SET a:${labels} RETURN labels(a) AS labels"
-            logger.atInfo().log(setLabelsCypher)
+           // logger.atInfo().log(setLabelsCypher)
             return Neo4jConnectionService.executeCypherCommand(setLabelsCypher)
         }
        return ""
@@ -53,7 +53,7 @@ class AnnotationDao (val annotation: LitCovidAnnotation) {
         val relationshipCypher = "MATCH (pma:PubMedArticle), (a:Annotation) WHERE " +
                 "pma.pubmed_id = ${annotation.pubmedId} AND a.id = ${annotation.id} " +
                 "MERGE (pma) - [r:HAS_ANNOTATION] -> (a) RETURN r"
-        logger.atInfo().log(relationshipCypher)
+        //logger.atInfo().log(relationshipCypher)
         return Neo4jConnectionService.executeCypherCommand(relationshipCypher)
     }
 

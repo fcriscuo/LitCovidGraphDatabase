@@ -5,9 +5,7 @@
 package org.genomicdatasci.covidpubmed.ogm
 
 import com.google.common.flogger.FluentLogger
-import io.ktor.util.reflect.*
 import org.neo4j.ogm.model.Result
-import kotlin.reflect.KProperty1
 
 
 val logger: FluentLogger = FluentLogger.forEnclosingClass();
@@ -39,8 +37,6 @@ fun findAnnotationByTypeAndPubMedId(type: String, pubmedId: Long): List<Annotati
     }
     return annotationList
 }
-
-
 
 fun findAuthorsByPubMedId(pubmedId: Long): List<Author> {
     val authorList = mutableListOf<Author>()
@@ -79,7 +75,6 @@ fun findJournalIssueByPubMedId(pubmedId: Long): JournalIssue? {
     }
     return null
 }
-
 
 fun selectOgmData(query: String, className:String): List<Any> {
     val ogmList = mutableListOf<Any>()

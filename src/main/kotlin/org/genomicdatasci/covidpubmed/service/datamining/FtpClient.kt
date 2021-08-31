@@ -30,7 +30,7 @@ and retrieving a specified remote file to a local file.
 If the specified local file already exists, it will be overwritten
  */
 data class FtpClient(val server: String) {
-    val ftp = FTPClient()
+    private val ftp = FTPClient()
 
     init {
         ftp.addProtocolCommandListener(PrintCommandListener(PrintWriter(System.out)))
@@ -72,13 +72,13 @@ fun retrieveRemoteFileByFtpUrl(ftpUrl: String, localFilePath: RefinedFilePath): 
     val urlConnection = URL(ftpUrl)
     urlConnection.openConnection()
     // the FileUtils method closes the input stream
-    try {
+    return try {
         FileUtils.copyInputStreamToFile(urlConnection.openStream(), localFilePath.getPath().toFile())
         if (FilenameUtils.getExtension(localFilePath.filePathName) in LitCovidFileUtils.compressedFileExtensions) {
             LitCovidFileUtils.gunzipFile(localFilePath.filePathName)
         }
-        return Either.Right("$ftpUrl downloaded to  $localFilePath")
+        Either.Right("$ftpUrl downloaded to  $localFilePath")
     } catch (e: Exception) {
-        return Either.Left(e)
+        Either.Left(e)
     }
 }
